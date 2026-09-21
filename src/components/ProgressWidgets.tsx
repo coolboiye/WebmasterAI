@@ -139,7 +139,7 @@ export function ModuleList() {
           <li key={id} className="border-b border-line">
             <Link
               href={mod.path}
-              className="group grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 py-6 transition-[background-color,transform] duration-200 hover:translate-x-[2px] hover:bg-surface sm:grid-cols-[2.5rem_minmax(0,1fr)_11rem] sm:items-center sm:gap-x-8"
+              className="module-link group -mx-3 grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 px-3 py-6 transition-[background-color,transform] duration-200 hover:translate-x-[2px] hover:bg-surface sm:grid-cols-[2.5rem_minmax(0,1fr)_11rem] sm:items-center sm:gap-x-8"
             >
               <span className="mono pt-1 text-[0.875rem] text-brand sm:pt-0">
                 {String(index + 1).padStart(2, "0")}

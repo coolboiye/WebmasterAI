@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { AuthButton } from "@/components/AuthButton";
 import { BrandMark } from "@/components/ui/BrandMark";
@@ -24,6 +24,7 @@ function isActive(pathname: string, href: string) {
 
 export function NavBar() {
   const pathname = usePathname();
+  const router = useRouter();
   const { xp, totalXp, hydrated } = useProgress();
   const [open, setOpen] = useState(false);
   const [theme, setTheme] = useState<"dark" | "light">("dark");
@@ -40,6 +41,10 @@ export function NavBar() {
     window.addEventListener("storage", syncTheme);
     return () => window.removeEventListener("storage", syncTheme);
   }, []);
+
+  function warmRoute(href: string) {
+    router.prefetch(href);
+  }
 
   function toggleTheme() {
     const current = document.documentElement.dataset.theme === "light" ? "light" : "dark";
@@ -99,6 +104,9 @@ export function NavBar() {
                   <Link
                     href={link.href}
                     prefetch={process.env.NODE_ENV === "production"}
+                    onPointerEnter={() => warmRoute(link.href)}
+                    onPointerDown={() => warmRoute(link.href)}
+                    onFocus={() => warmRoute(link.href)}
                     aria-current={active ? "page" : undefined}
                     className={`relative flex h-20 items-center px-3 text-[1rem] leading-none transition-colors duration-150 ${
                       active ? "font-semibold text-ink" : "text-mute hover:text-ink"
@@ -175,6 +183,9 @@ export function NavBar() {
                   <Link
                     href={link.href}
                     prefetch={process.env.NODE_ENV === "production"}
+                    onPointerEnter={() => warmRoute(link.href)}
+                    onPointerDown={() => warmRoute(link.href)}
+                    onFocus={() => warmRoute(link.href)}
                     aria-current={active ? "page" : undefined}
                     className={`flex items-center justify-between gap-4 py-3.5 text-[1.0625rem] transition-colors duration-150 ${
                       active ? "font-semibold text-brand" : "text-ink hover:text-brand"
