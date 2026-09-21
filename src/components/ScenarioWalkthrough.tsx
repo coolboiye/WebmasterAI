@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useProgress } from "@/lib/progress-context";
+import { ArrowRightIcon, CheckIcon } from "@/components/ui/Icons";
 
 type Choice = { id: string; text: string; feedback: string; recommended?: boolean };
 type Scenario = { prompt: string; choices: Choice[] };
@@ -115,9 +116,9 @@ export function ScenarioWalkthrough() {
   const [choiceId, setChoiceId] = useState<string | null>(null);
 
   const done = hydrated && isActivityComplete("ethics-scenario");
-  const scenario = SCENARIOS[index];
+  const scenario = SCENARIOS[index]!;
   const isLast = index === SCENARIOS.length - 1;
-  const chosen = scenario?.choices.find((c) => c.id === choiceId);
+  const chosen = scenario.choices.find((c) => c.id === choiceId);
 
   function next() {
     if (isLast) {
@@ -128,39 +129,86 @@ export function ScenarioWalkthrough() {
     setChoiceId(null);
   }
 
-  if (done) {
-    return <p><strong>Completed</strong> — 30 XP earned.</p>;
-  }
-
   return (
-    <div className="stack" style={{ gap: "var(--space-4)" }}>
-      <p className="text-secondary" style={{ fontSize: "0.875rem" }}>
-        Scenario {index + 1} of {SCENARIOS.length}
-      </p>
-      <p style={{ fontWeight: 500, fontSize: "1.0625rem" }}>{scenario.prompt}</p>
-      <div className="stack" style={{ gap: "var(--space-2)" }}>
-        {scenario.choices.map((choice) => (
-          <button
-            key={choice.id}
-            className="quiz-option"
-            data-state={choiceId === choice.id ? (choice.recommended ? "correct" : undefined) : undefined}
-            onClick={() => setChoiceId(choice.id)}
-            aria-pressed={choiceId === choice.id}
-          >
-            {choice.text}
-          </button>
-        ))}
+    <div className="surface">
+      <div className="flex items-center gap-4 border-b border-line px-5 py-3.5">
+        <span className="mono shrink-0 text-[0.8125rem] text-mute">
+          {String(index + 1).padStart(2, "0")} / {String(SCENARIOS.length).padStart(2, "0")}
+        </span>
+        <div className="flex flex-1 items-center gap-1" aria-hidden="true">
+          {SCENARIOS.map((s, i) => (
+            <span
+              key={s.prompt}
+              className={`h-[3px] flex-1 transition-colors duration-150 ${
+                i < index ? "bg-brand" : i === index ? "bg-mute" : "bg-line"
+              }`}
+            />
+          ))}
+        </div>
+        <span className="tag shrink-0">30 XP</span>
       </div>
-      {chosen && <p className="feedback">{chosen.feedback}</p>}
-      {chosen && (
-        <button
-          type="button"
-          className="btn btn-primary"
-          style={{ alignSelf: "flex-start" }}
-          onClick={next}
-        >
-          {isLast ? "Finish" : "Next scenario"}
-        </button>
+
+      <div className="px-5 py-6 sm:px-6">
+        <p className="text-[1.125rem] leading-snug font-semibold text-ink">{scenario.prompt}</p>
+
+        <div className="mt-6 flex flex-col gap-2.5" role="group" aria-label="Scenario choices">
+          {scenario.choices.map((choice) => {
+            const isChosen = choiceId === choice.id;
+            const markRecommended = Boolean(choiceId) && Boolean(choice.recommended);
+
+            return (
+              <button
+                key={choice.id}
+                type="button"
+                onClick={() => setChoiceId(choice.id)}
+                aria-pressed={isChosen}
+                className={`flex cursor-pointer items-start gap-4 rounded-[3px] border px-4 py-3.5 text-left text-[1rem] leading-relaxed transition-colors duration-150 ${
+                  isChosen
+                    ? "border-brand bg-surface text-ink"
+                    : "border-line-strong text-body hover:border-faint hover:bg-surface hover:text-ink"
+                }`}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`mt-[0.4rem] grid size-4 shrink-0 place-items-center rounded-[2px] border transition-colors duration-150 ${
+                    isChosen ? "border-brand" : "border-faint"
+                  }`}
+                >
+                  {isChosen && <span className="size-2 rounded-[1px] bg-brand" />}
+                </span>
+                <span className="min-w-0 flex-1">
+                  {choice.text}
+                  {markRecommended && <span className="tag tag-ok mt-2.5 block w-fit">Strongest option</span>}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {chosen && (
+          <div
+            role="status"
+            className={`mt-6 border-l-2 py-1 pl-5 ${chosen.recommended ? "border-ok" : "border-brand"}`}
+          >
+            <p className="text-[0.9375rem] font-semibold text-ink">
+              {chosen.recommended ? "Strongest move" : "Worth reconsidering"}
+            </p>
+            <p className="mt-1.5 text-[0.9375rem] leading-relaxed text-body">{chosen.feedback}</p>
+          </div>
+        )}
+
+        {chosen && (
+          <button type="button" className="btn btn-primary mt-7" onClick={next}>
+            {isLast ? "Finish scenarios" : "Next scenario"}
+            {isLast ? <CheckIcon size={17} /> : <ArrowRightIcon size={17} />}
+          </button>
+        )}
+      </div>
+
+      {done && (
+        <p className="border-t border-line px-5 py-3.5 text-[0.875rem] text-mute">
+          Walkthrough complete — 30 XP earned.
+        </p>
       )}
     </div>
   );

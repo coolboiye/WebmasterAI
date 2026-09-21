@@ -1,15 +1,13 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { ACTIVITIES, ActivityId, TOTAL_XP, levelForXp } from "@/lib/progress-data";
+import { ACTIVITIES, ActivityId, TOTAL_XP } from "@/lib/progress-data";
+import { LeaderboardList, type LeaderboardRow } from "@/components/LeaderboardList";
+import { Reveal } from "@/components/ui/Reveal";
+import { AlertIcon, ShieldIcon, TrophyIcon } from "@/components/ui/Icons";
 
 export const dynamic = "force-dynamic";
 
-type Row = {
-  id: string;
-  displayName: string;
-  xp: number;
-  activitiesDone: number;
-};
+type Row = LeaderboardRow;
 
 async function loadLeaderboard(): Promise<{ rows: Row[]; configured: boolean }> {
   const supabase = await createClient();
@@ -48,47 +46,88 @@ export default async function LeaderboardPage() {
   const { rows, configured } = await loadLeaderboard();
 
   return (
-    <div className="page section">
-      <div className="prose stack" style={{ gap: "var(--space-8)" }}>
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
-          <h1>Leaderboard</h1>
-          <p className="text-secondary" style={{ fontSize: "1.0625rem" }}>
-            Everyone who has signed in with Google, ranked by XP earned across the three modules.
-          </p>
-        </div>
+    <div className="shell band">
+      <div className="mx-auto flex max-w-3xl flex-col gap-8">
+        <Reveal>
+          <header className="flex flex-col gap-4">
+            <span className="eyebrow">
+              <TrophyIcon size={13} />
+              Class ranking
+            </span>
+            <h1>Leaderboard</h1>
+            <p className="measure text-[0.9375rem] leading-relaxed text-mute">
+              Everyone who has signed in with Google, ranked by XP earned across the three modules.
+            </p>
+          </header>
+        </Reveal>
 
         {!configured ? (
-          <p className="feedback">
-            No Supabase project is connected yet, so there&rsquo;s no shared leaderboard to show — this
-            page (and cross-device progress) turns on once <code>NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
-            <code>NEXT_PUBLIC_SUPABASE_ANON_KEY</code> are set. See the README for setup steps. Until
-            then, everyone&rsquo;s progress is tracked locally on their own device from the{" "}
-            <Link href="/progress">Progress</Link> page.
-          </p>
+          <Reveal delay={80}>
+            <div className="surface surface flex gap-4 p-6">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-line-strong bg-raised text-mute">
+                <AlertIcon size={18} />
+              </span>
+              <div className="min-w-0">
+                <h2 className="text-base">No shared leaderboard yet</h2>
+                <p className="mt-2 text-[0.9375rem] leading-relaxed text-mute">
+                  A Supabase project isn&rsquo;t connected, so there&rsquo;s nothing shared to rank. This
+                  page — and cross-device progress — switches on once{" "}
+                  <code className="mono text-brand-soft">NEXT_PUBLIC_SUPABASE_URL</code> and{" "}
+                  <code className="mono text-brand-soft">NEXT_PUBLIC_SUPABASE_ANON_KEY</code> are set. See
+                  the README for setup steps. Until then, progress is tracked locally on each device from
+                  the{" "}
+                  <Link
+                    href="/progress"
+                    className="text-brand-soft underline underline-offset-4 transition-colors hover:text-brand-strong"
+                  >
+                    Progress
+                  </Link>{" "}
+                  page.
+                </p>
+              </div>
+            </div>
+          </Reveal>
         ) : rows.length === 0 ? (
-          <p className="text-secondary">
-            Nobody has signed in yet. Sign in with Google from the nav bar to be the first one on the
-            board.
-          </p>
+          <Reveal delay={80}>
+            <div className="surface surface flex flex-col items-center gap-4 px-6 py-14 text-center">
+              <span className="grid size-12 place-items-center rounded-2xl border border-line-strong bg-raised text-brand-strong">
+                <TrophyIcon size={22} />
+              </span>
+              <div>
+                <h2 className="text-base">Nobody has signed in yet</h2>
+                <p className="mx-auto mt-2 max-w-sm text-[0.9375rem] leading-relaxed text-mute">
+                  Sign in with Google from the menu above and you&rsquo;ll be the first name on the board.
+                </p>
+              </div>
+              <Link href="/login" className="btn btn-primary btn-sm">
+                Sign in
+              </Link>
+            </div>
+          </Reveal>
         ) : (
-          <ul className="row-list">
-            {rows.map((row, i) => (
-              <li key={row.id} className="row-list-item">
-                <div className="row-link" style={{ cursor: "default" }}>
-                  <span className="row-title">
-                    <span className="mono text-secondary" style={{ marginRight: "var(--space-3)" }}>
-                      #{i + 1}
-                    </span>
-                    {row.displayName}
-                  </span>
-                  <span className="row-meta mono">
-                    {row.xp} / {TOTAL_XP} XP &middot; {levelForXp(row.xp).name}
-                  </span>
-                </div>
-              </li>
-            ))}
-          </ul>
+          <>
+            <Reveal delay={80}>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">
+                <span>{rows.length} students ranked</span>
+                <span className="text-line-strong">·</span>
+                <span>{TOTAL_XP} XP available</span>
+              </div>
+            </Reveal>
+            <Reveal delay={140}>
+              <LeaderboardList rows={rows} totalXp={TOTAL_XP} />
+            </Reveal>
+          </>
         )}
+
+        <Reveal delay={200}>
+          <div className="flex items-start gap-3.5 border-t border-line pt-6">
+            <ShieldIcon size={16} className="mt-0.5 shrink-0 text-faint" />
+            <p className="text-[0.875rem] leading-relaxed text-faint">
+              Names and XP here are visible to anyone with this site&rsquo;s URL — that&rsquo;s what makes a
+              class leaderboard work, but worth knowing before you sign in.
+            </p>
+          </div>
+        </Reveal>
       </div>
     </div>
   );

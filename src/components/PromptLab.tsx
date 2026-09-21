@@ -8,7 +8,7 @@ const ROUNDS = [
     weak: "Write about dogs.",
     strong:
       "Write a 150-word explainer for a 9th grader on why dogs' sense of smell is so much stronger than humans'. Include two concrete comparisons.",
-    why: "Names the audience, sets a length, and asks for specific comparisons instead of \"anything about dogs.\"",
+    why: "Names the audience, sets a length, and asks for specific comparisons instead of \u201canything about dogs.\u201d",
   },
   {
     weak: "help with math",
@@ -35,7 +35,8 @@ export function PromptLab() {
   const [attempts, setAttempts] = useState<string[]>(ROUNDS.map(() => ""));
   const [revealed, setRevealed] = useState<boolean[]>(ROUNDS.map(() => false));
 
-  const allRevealed = revealed.every(Boolean);
+  const revealedCount = revealed.filter(Boolean).length;
+  const allRevealed = revealedCount === ROUNDS.length;
   const allAttempted = attempts.every((a) => a.trim().length > 0);
 
   useEffect(() => {
@@ -44,48 +45,76 @@ export function PromptLab() {
 
   const done = hydrated && isActivityComplete("tools-promptlab");
 
-  if (done) {
-    return <p><strong>Completed</strong> — 30 XP earned.</p>;
-  }
-
   return (
-    <div className="stack" style={{ gap: "var(--space-8)" }}>
-      {ROUNDS.map((round, i) => (
-        <div key={round.weak} className="stack" style={{ gap: "var(--space-3)" }}>
-          <p className="text-secondary" style={{ fontSize: "0.875rem" }}>
-            Weak prompt {i + 1} of {ROUNDS.length}
-          </p>
-          <p className="mono" style={{ fontSize: "0.9375rem" }}>
-            &ldquo;{round.weak}&rdquo;
-          </p>
-          <label className="stack" style={{ gap: "var(--space-2)" }}>
-            <span style={{ fontSize: "0.875rem" }}>Rewrite it to be specific and useful:</span>
-            <textarea
-              rows={3}
-              value={attempts[i]}
-              onChange={(e) =>
-                setAttempts((prev) => prev.map((val, idx) => (idx === i ? e.target.value : val)))
-              }
-              placeholder="Type your improved version here"
-            />
-          </label>
-          {!revealed[i] ? (
-            <button
-              className="btn btn-secondary"
-              style={{ alignSelf: "flex-start" }}
-              disabled={attempts[i].trim().length === 0}
-              onClick={() => setRevealed((prev) => prev.map((v, idx) => (idx === i ? true : v)))}
-            >
-              Compare with a strong version
-            </button>
-          ) : (
-            <div className="feedback stack" style={{ gap: "var(--space-2)" }}>
-              <p className="mono" style={{ fontSize: "0.9375rem" }}>&ldquo;{round.strong}&rdquo;</p>
-              <p className="text-secondary" style={{ fontSize: "0.875rem" }}>{round.why}</p>
-            </div>
-          )}
-        </div>
-      ))}
+    <div className="surface">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-5 py-4">
+        <p className="text-[0.9375rem] text-mute">
+          {done ? "Lab complete — 30 XP earned." : `${revealedCount} of ${ROUNDS.length} compared`}
+        </p>
+        <p className="text-[0.875rem] text-faint">Checklist: audience · format · goal · constraints</p>
+      </div>
+
+      <ol>
+        {ROUNDS.map((round, i) => {
+          const revealedThis = revealed[i];
+          const attempted = attempts[i]!.trim().length > 0;
+
+          return (
+            <li key={round.weak} className="border-b border-line px-5 py-6 last:border-b-0">
+              <div className="grid gap-5 lg:grid-cols-2 lg:gap-10">
+                <label className="flex flex-col">
+                  <span className="flex items-baseline gap-3">
+                    <span className="mono text-[0.8125rem] text-brand">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span className="text-[0.9375rem] text-faint">Given prompt</span>
+                  </span>
+                  <span className="mono mt-2 text-[0.9375rem] text-mute">&ldquo;{round.weak}&rdquo;</span>
+
+                  <span className="field-label mt-5">Your rewrite</span>
+                  <textarea
+                    rows={4}
+                    className="field"
+                    value={attempts[i]}
+                    placeholder="Name the audience, the format, the goal…"
+                    onChange={(e) =>
+                      setAttempts((prev) => prev.map((val, idx) => (idx === i ? e.target.value : val)))
+                    }
+                  />
+
+                  {!revealedThis && (
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        disabled={!attempted}
+                        onClick={() => setRevealed((prev) => prev.map((v, idx) => (idx === i ? true : v)))}
+                      >
+                        Compare with a strong version
+                      </button>
+                      {!attempted && (
+                        <span className="text-[0.875rem] text-faint">Write your version first</span>
+                      )}
+                    </div>
+                  )}
+                </label>
+
+                {revealedThis && (
+                  <div className="border-t border-line pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10">
+                    <p className="text-[0.9375rem] text-faint">Stronger version</p>
+                    <p className="mono mt-2 text-[0.9375rem] leading-relaxed text-ink">
+                      &ldquo;{round.strong}&rdquo;
+                    </p>
+                    <p className="mt-4 border-t border-line pt-4 text-[0.9375rem] leading-relaxed text-mute">
+                      {round.why}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }

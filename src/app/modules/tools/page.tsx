@@ -2,6 +2,9 @@ import { PromptLab } from "@/components/PromptLab";
 import { GroqPlayground } from "@/components/GroqPlayground";
 import { QuizBlock } from "@/components/QuizBlock";
 import { ModuleNav } from "@/components/ModuleNav";
+import { ModuleRail } from "@/components/ModuleRail";
+import { Reveal } from "@/components/ui/Reveal";
+import { BoltIcon, LayersIcon } from "@/components/ui/Icons";
 
 const TOOL_CATEGORIES = [
   {
@@ -143,19 +146,29 @@ const QUIZ = [
 
 export default function ToolsPage() {
   return (
-    <div className="page section">
-      <div className="prose stack" style={{ gap: "var(--space-12)" }}>
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
-          <p className="text-secondary mono" style={{ fontSize: "0.8125rem" }}>Module 2 of 3</p>
-          <h1>Practical AI Tools & Techniques</h1>
-          <p className="text-secondary" style={{ fontSize: "1.0625rem" }}>
-            Matching the right tool to the task, and writing prompts that actually get you what you need.
-          </p>
-        </div>
+    <div className="shell-reading band">
+      <div className="grid gap-12 xl:grid-cols-[minmax(0,38rem)_16rem] xl:justify-between">
+      <div className="prose stack min-w-0" style={{ gap: "var(--space-12)" }}>
+        <Reveal>
+          <header className="flex flex-col gap-4">
+            <span className="eyebrow">
+              <LayersIcon size={13} />
+              Module 2 of 3
+            </span>
+            <h1>Practical AI Tools &amp; Techniques</h1>
+            <p className="text-secondary" style={{ fontSize: "1.0625rem" }}>
+              Matching the right tool to the task, and writing prompts that actually get you what you need.
+            </p>
+          </header>
+        </Reveal>
 
         <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">01</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>Matching the tool to the task</h2>
-          <ul className="stack" style={{ gap: "var(--space-4)", paddingLeft: "1.25rem" }}>
+          <ul className="prose-list" style={{ gap: "var(--space-4)" }}>
             {TOOL_CATEGORIES.map((cat) => (
               <li key={cat.title}>
                 <p style={{ fontWeight: 500 }}>{cat.title}</p>
@@ -169,7 +182,11 @@ export default function ToolsPage() {
           </p>
         </div>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">02</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>Writing a prompt that works</h2>
           <p>
             A prompt is the instruction you give an AI tool, and the quality of what you get back depends
@@ -177,7 +194,7 @@ export default function ToolsPage() {
             audience, your format, and exactly what you're trying to accomplish gets something you can
             actually use. A useful mental checklist before you hit enter:
           </p>
-          <ul className="stack" style={{ gap: "var(--space-2)", paddingLeft: "1.25rem" }}>
+          <ul className="prose-list">
             <li><strong>Audience</strong> — who is this for? A 9th grader, a teacher, yourself?</li>
             <li><strong>Format</strong> — a paragraph, a bulleted list, a specific word count?</li>
             <li><strong>Goal</strong> — what should the output let you do next?</li>
@@ -190,17 +207,23 @@ export default function ToolsPage() {
         </div>
 
         <div className="stack" style={{ gap: "var(--space-4)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2>Prompt Lab</h2>
-            <span className="mono text-secondary" style={{ fontSize: "0.8125rem" }}>30 XP</span>
+            <span className="chip chip-azure">
+              <BoltIcon size={11} />
+              30 XP
+            </span>
           </div>
           <PromptLab />
         </div>
 
         <div className="stack" style={{ gap: "var(--space-4)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2>Live Prompt Playground</h2>
-            <span className="mono text-secondary" style={{ fontSize: "0.8125rem" }}>40 XP</span>
+            <span className="chip chip-azure">
+              <BoltIcon size={11} />
+              40 XP
+            </span>
           </div>
           <p>
             The exercise above compares prompts we picked. Here, you run your own two versions of a
@@ -215,7 +238,11 @@ export default function ToolsPage() {
           <GroqPlayground />
         </div>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">03</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>Fact-check before you use it</h2>
           <p>
             As covered in Module 1, AI tools can generate fluent, confident, and wrong output — a
@@ -226,14 +253,24 @@ export default function ToolsPage() {
         </div>
 
         <div className="stack" style={{ gap: "var(--space-4)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2>Check your understanding</h2>
-            <span className="mono text-secondary" style={{ fontSize: "0.8125rem" }}>100 XP</span>
+            <span className="chip chip-azure">
+              <BoltIcon size={11} />
+              100 XP
+            </span>
           </div>
           <QuizBlock activityId="tools-quiz" questions={QUIZ} />
         </div>
 
         <ModuleNav current="tools" />
+      </div>
+
+      <aside className="no-print hidden xl:block">
+        <div className="sticky top-24">
+          <ModuleRail current="tools" />
+        </div>
+      </aside>
       </div>
     </div>
   );

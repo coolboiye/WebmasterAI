@@ -1,6 +1,9 @@
 import { QuizBlock } from "@/components/QuizBlock";
 import { VocabList } from "@/components/VocabList";
 import { ModuleNav } from "@/components/ModuleNav";
+import { ModuleRail } from "@/components/ModuleRail";
+import { Reveal } from "@/components/ui/Reveal";
+import { BoltIcon, CompassIcon } from "@/components/ui/Icons";
 
 const QUIZ = [
   {
@@ -138,17 +141,27 @@ const TIMELINE = [
 
 export default function FundamentalsPage() {
   return (
-    <div className="page section">
-      <div className="prose stack" style={{ gap: "var(--space-12)" }}>
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
-          <p className="text-secondary mono" style={{ fontSize: "0.8125rem" }}>Module 1 of 3</p>
-          <h1>Fundamental AI Concepts</h1>
-          <p className="text-secondary" style={{ fontSize: "1.0625rem" }}>
-            What AI actually is, how it learns, and where it already shows up in your day.
-          </p>
-        </div>
+    <div className="shell-reading band">
+      <div className="grid gap-12 xl:grid-cols-[minmax(0,38rem)_16rem] xl:justify-between">
+      <div className="prose stack min-w-0" style={{ gap: "var(--space-12)" }}>
+        <Reveal>
+          <header className="flex flex-col gap-4">
+            <span className="eyebrow">
+              <CompassIcon size={13} />
+              Module 1 of 3
+            </span>
+            <h1>Fundamental AI Concepts</h1>
+            <p className="text-secondary" style={{ fontSize: "1.0625rem" }}>
+              What AI actually is, how it learns, and where it already shows up in your day.
+            </p>
+          </header>
+        </Reveal>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">01</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>What is AI, really?</h2>
           <p>
             "Artificial intelligence" covers any system that performs tasks which normally require human
@@ -169,7 +182,11 @@ export default function FundamentalsPage() {
           </p>
         </div>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">02</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>How machines learn</h2>
           <p>
             Think about studying with flashcards. If you memorize the exact card order, you can recite
@@ -190,13 +207,17 @@ export default function FundamentalsPage() {
           </p>
         </div>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">03</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>Types of AI you'll actually encounter</h2>
           <p>
             "AI" gets used as a catch-all term, but the systems behind it tend to fall into a few
             recognizable jobs:
           </p>
-          <ul className="stack" style={{ gap: "var(--space-2)", paddingLeft: "1.25rem" }}>
+          <ul className="prose-list">
             <li>
               <strong>Generative</strong> — creates new content from a prompt: a chatbot writing text, a
               tool generating an image, code, or music. This is what most people picture when they hear
@@ -223,7 +244,11 @@ export default function FundamentalsPage() {
           </p>
         </div>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">04</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>AI in your pocket</h2>
           <p>
             AI is already running quietly behind tools you use daily: a streaming app predicting what
@@ -234,36 +259,54 @@ export default function FundamentalsPage() {
           </p>
         </div>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">05</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>A brief timeline</h2>
-          <ol className="stack" style={{ gap: "var(--space-3)", paddingLeft: "1.25rem" }}>
+          <ol className="timeline">
             {TIMELINE.map((item) => (
-              <li key={item.year}>
-                <span className="mono" style={{ color: "var(--accent)", fontWeight: 600 }}>{item.year}</span>
-                {" — "}
-                <span className="text-secondary">{item.text}</span>
+              <li className="timeline-node" key={item.year}>
+                <span className="font-mono text-[0.8125rem] font-semibold tracking-[0.06em] text-brand-soft">
+                  {item.year}
+                </span>
+                <p className="mt-1 text-[0.875rem] leading-relaxed">{item.text}</p>
               </li>
             ))}
           </ol>
         </div>
 
         <div className="stack" style={{ gap: "var(--space-4)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2>Key terms</h2>
-            <span className="mono text-secondary" style={{ fontSize: "0.8125rem" }}>20 XP</span>
+            <span className="chip chip-azure">
+              <BoltIcon size={11} />
+              20 XP
+            </span>
           </div>
           <VocabList terms={VOCAB} />
         </div>
 
         <div className="stack" style={{ gap: "var(--space-4)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2>Check your understanding</h2>
-            <span className="mono text-secondary" style={{ fontSize: "0.8125rem" }}>100 XP</span>
+            <span className="chip chip-azure">
+              <BoltIcon size={11} />
+              100 XP
+            </span>
           </div>
           <QuizBlock activityId="fundamentals-quiz" questions={QUIZ} />
         </div>
 
         <ModuleNav current="fundamentals" />
+      </div>
+
+      <aside className="no-print hidden xl:block">
+        <div className="sticky top-24">
+          <ModuleRail current="fundamentals" />
+        </div>
+      </aside>
       </div>
     </div>
   );

@@ -1,6 +1,9 @@
 import { QuizBlock } from "@/components/QuizBlock";
 import { ScenarioWalkthrough } from "@/components/ScenarioWalkthrough";
 import { ModuleNav } from "@/components/ModuleNav";
+import { ModuleRail } from "@/components/ModuleRail";
+import { Reveal } from "@/components/ui/Reveal";
+import { BoltIcon, ScaleIcon } from "@/components/ui/Icons";
 
 const QUIZ = [
   {
@@ -111,18 +114,28 @@ const QUIZ = [
 
 export default function EthicsPage() {
   return (
-    <div className="page section">
-      <div className="prose stack" style={{ gap: "var(--space-12)" }}>
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
-          <p className="text-secondary mono" style={{ fontSize: "0.8125rem" }}>Module 3 of 3</p>
-          <h1>Ethical AI Usage</h1>
-          <p className="text-secondary" style={{ fontSize: "1.0625rem" }}>
-            Academic honesty, bias, privacy, and copyright — the judgment calls that come with using AI well.
-          </p>
-        </div>
+    <div className="shell-reading band">
+      <div className="grid gap-12 xl:grid-cols-[minmax(0,38rem)_16rem] xl:justify-between">
+      <div className="prose stack min-w-0" style={{ gap: "var(--space-12)" }}>
+        <Reveal>
+          <header className="flex flex-col gap-4">
+            <span className="eyebrow">
+              <ScaleIcon size={13} />
+              Module 3 of 3
+            </span>
+            <h1>Ethical AI Usage</h1>
+            <p className="text-secondary" style={{ fontSize: "1.0625rem" }}>
+              Academic honesty, bias, privacy, and copyright — the judgment calls that come with using AI well.
+            </p>
+          </header>
+        </Reveal>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
-          <h2>Academic integrity & AI</h2>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">01</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
+          <h2>Academic integrity &amp; AI</h2>
           <p>
             Most schools now expect students to disclose if and how they used AI on an assignment —
             similar to citing a source. This isn't about treating AI as forbidden; it's about making sure
@@ -133,7 +146,11 @@ export default function EthicsPage() {
           </p>
         </div>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">02</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>Bias in the machine</h2>
           <p>
             An AI model learns from the data it's given, and real-world data carries real-world
@@ -146,7 +163,11 @@ export default function EthicsPage() {
           </p>
         </div>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">03</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>Where does your data go?</h2>
           <p>
             Anything you type into a free AI tool can be stored, reviewed by people improving the system,
@@ -158,7 +179,11 @@ export default function EthicsPage() {
           </p>
         </div>
 
-        <div className="stack" style={{ gap: "var(--space-3)" }}>
+        <div className="stack" style={{ gap: "var(--space-4)" }}>
+          <div className="flex items-center gap-3">
+            <span className="font-mono text-[0.6875rem] tracking-[0.16em] text-faint">04</span>
+            <span className="h-px flex-1 bg-line-strong" />
+          </div>
           <h2>Copyright and AI-generated content</h2>
           <p>
             This one matters directly for a Webmaster entry: if you use an AI tool to generate any image,
@@ -179,22 +204,35 @@ export default function EthicsPage() {
         </div>
 
         <div className="stack" style={{ gap: "var(--space-4)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2>You decide</h2>
-            <span className="mono text-secondary" style={{ fontSize: "0.8125rem" }}>30 XP</span>
+            <span className="chip chip-azure">
+              <BoltIcon size={11} />
+              30 XP
+            </span>
           </div>
           <ScenarioWalkthrough />
         </div>
 
         <div className="stack" style={{ gap: "var(--space-4)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <h2>Check your understanding</h2>
-            <span className="mono text-secondary" style={{ fontSize: "0.8125rem" }}>100 XP</span>
+            <span className="chip chip-azure">
+              <BoltIcon size={11} />
+              100 XP
+            </span>
           </div>
           <QuizBlock activityId="ethics-quiz" questions={QUIZ} />
         </div>
 
         <ModuleNav current="ethics" />
+      </div>
+
+      <aside className="no-print hidden xl:block">
+        <div className="sticky top-24">
+          <ModuleRail current="ethics" />
+        </div>
+      </aside>
       </div>
     </div>
   );

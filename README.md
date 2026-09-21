@@ -37,6 +37,42 @@ with a Supabase backend fits within "framework systems," not the prohibited cate
   Deployment below) — a backend that's asleep, unpaid, or misconfigured at demo time will look
   identical to a broken static site to a judge.
 
+## UI system
+
+The interface is **dark-mode only**, built on Tailwind CSS v4 with design tokens defined once in
+`src/app/globals.css` under `@theme`. Everything visual reads from those tokens, so a palette or
+spacing change is a one-file edit:
+
+- **Surfaces** `--color-ink` / `--color-surface` / `--color-surface-2`
+- **Text** `--color-fg` / `--color-body` / `--color-muted` / `--color-subtle`
+- **Accent** `--color-emerald` (primary) paired with `--color-azure` for gradients and secondary emphasis
+- **Motion** named easings (`--ease-out-expo`, `--ease-spring`) plus `--animate-*` keyframes
+
+Hand-written styles live inside `@layer base` / `@layer components`. That matters: unlayered CSS
+outranks every Tailwind utility, so a `.btn` or `.card` written outside a layer could not be
+adjusted with utility classes at the call site.
+
+Reusable pieces:
+
+- `src/components/ui/Icons.tsx` — the whole icon set as inline SVG (no emoji, no icon dependency)
+- `src/components/ui/Reveal.tsx` — scroll-reveal wrapper; content stays visible if JavaScript is off
+- `src/components/ui/Field.tsx`, `BrandMark.tsx` — small shared primitives
+
+### A note on the Groq Prompt Playground
+
+The route in `src/app/api/groq/route.ts` proxies chat completions with a system prompt, calls Groq
+with `reasoning_format: "parsed"`, and then runs the reply through `src/lib/groq-safety.ts`. That
+module exists because reasoning models (gpt-oss, qwen3, r1 distills) generate an internal thinking
+channel that is **not anchored to the prompt's language** — so an English prompt can come back with
+reasoning pasted in front of the answer, sometimes in Chinese. The guards are:
+
+1. Ask for `parsed` reasoning so the thinking text lands in `message.reasoning`, not `message.content`.
+2. Strip ` thinking…<｜end▁of▁thinking｜>` blocks, `<|channel|>`-style special tokens, and stray reasoning headers.
+3. Drop individual lines that are dominated by a non-Latin script — unless the student's own prompt
+   is written in that script, in which case nothing is filtered.
+4. If the reply is still empty or still in the wrong language, retry once with a much firmer
+   instruction, then surface a plain-language error instead of showing the raw reasoning.
+
 ## Run it locally
 
 You'll need [Node.js](https://nodejs.org) 18.18 or newer.
@@ -145,8 +181,8 @@ Netlify also supports Next.js API routes and middleware and works as an alternat
 | **Theme** | Every module and the homepage frame the site around the 2026–27 AI theme |
 | **Challenge** | Three content modules (`/modules/*`) + gamification (`/progress`) + a live AI tool (Groq Prompt Playground) + accounts/leaderboard (`/leaderboard`) |
 | **Content** | Original written explainers, a timeline, vocabulary set, prompt exercises (static and live), and ethics scenarios — no filler text |
-| **Layout & Navigation** | Persistent top nav, flat list-style module index, everything reachable in 1–2 clicks |
-| **Graphics & Color Scheme** | Deliberately restrained: one accent color, no gradients/shadows, generous whitespace |
+| **Layout & Navigation** | Sticky glass top nav (with a full mobile drawer), module cards, sticky per-module progress rail, everything reachable in 1–2 clicks |
+| **Graphics & Color Scheme** | Dark, low-glare base with a single emerald→azure accent pair, token-driven spacing/type scale, motion that respects `prefers-reduced-motion` |
 | **Function & Compatibility** | Responsive down to mobile, no broken links; see the dynamic-hosting note above instead of a pure static-build claim |
 | **Go/No-Go: Copyright Checklist** | `/copyright` — a working asset log + advisor sign-off |
 | **Go/No-Go: URL** | Deploy it (see above) before submitting |

@@ -2,6 +2,9 @@
 
 import { useMemo } from "react";
 import { useLocalStorageState } from "@/lib/use-local-storage";
+import { Field } from "@/components/ui/Field";
+import { Reveal } from "@/components/ui/Reveal";
+import { ClockIcon, ListIcon, PlusIcon, PrinterIcon, TrashIcon } from "@/components/ui/Icons";
 
 type Entry = {
   id: string;
@@ -20,10 +23,15 @@ const EMPTY_ENTRY = (): Entry => ({
 });
 
 export default function WorkLogPage() {
-  const [entries, setEntries] = useLocalStorageState<Entry[]>("ai-portal-worklog", []);
+  const [entries, setEntries, hydrated] = useLocalStorageState<Entry[]>("ai-portal-worklog", []);
 
   const totalHours = useMemo(
     () => entries.reduce((sum, e) => sum + (parseFloat(e.hours) || 0), 0),
+    [entries]
+  );
+
+  const contributors = useMemo(
+    () => new Set(entries.map((e) => e.student.trim()).filter(Boolean)).size,
     [entries]
   );
 
@@ -36,88 +44,157 @@ export default function WorkLogPage() {
   }
 
   return (
-    <div className="page section">
-      <div className="stack" style={{ gap: "var(--space-8)", maxWidth: "56rem" }}>
-        <div className="prose stack" style={{ gap: "var(--space-3)" }}>
-          <h1>Student Work Log</h1>
-          <p className="text-secondary" style={{ fontSize: "1.0625rem" }}>
-            A record of who worked on the site, when, and on what — required for the state submission.
-          </p>
-        </div>
+    <div className="shell band">
+      <div className="mx-auto flex max-w-4xl flex-col gap-8">
+        <Reveal>
+          <header className="flex flex-col gap-4">
+            <span className="eyebrow">
+              <ListIcon size={13} />
+              State entry requirement
+            </span>
+            <h1>Student work log</h1>
+            <p className="measure text-[0.9375rem] leading-relaxed text-mute">
+              A record of who worked on the site, when, and on what — required for the state submission.
+            </p>
+          </header>
+        </Reveal>
 
-        <div style={{ overflowX: "auto" }}>
-          <table>
-            <thead>
-              <tr>
-                <th style={{ minWidth: "8rem" }}>Date</th>
-                <th style={{ minWidth: "8rem" }}>Student</th>
-                <th style={{ minWidth: "5rem" }}>Hours</th>
-                <th style={{ minWidth: "14rem" }}>Task</th>
-                <th className="no-print"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {entries.map((entry) => (
-                <tr key={entry.id}>
-                  <td>
+        <Reveal delay={80}>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            <div className="surface p-4">
+              <p className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">Total hours</p>
+              <p className="mt-2 font-mono text-xl font-semibold text-ink">
+                {hydrated ? totalHours : 0}
+              </p>
+            </div>
+            <div className="surface p-4">
+              <p className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">Sessions</p>
+              <p className="mt-2 font-mono text-xl font-semibold text-ink">
+                {hydrated ? entries.length : 0}
+              </p>
+            </div>
+            <div className="surface col-span-2 p-4 sm:col-span-1">
+              <p className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">Contributors</p>
+              <p className="mt-2 font-mono text-xl font-semibold text-ink">{hydrated ? contributors : 0}</p>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delay={120}>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              className="btn btn-secondary no-print"
+              onClick={() => setEntries((prev) => [...prev, EMPTY_ENTRY()])}
+            >
+              <PlusIcon size={15} />
+              Add entry
+            </button>
+            <button type="button" className="btn btn-ghost no-print" onClick={() => window.print()}>
+              <PrinterIcon size={15} />
+              Print / save as PDF
+            </button>
+          </div>
+        </Reveal>
+
+        {hydrated && entries.length === 0 ? (
+          <Reveal delay={160}>
+            <div className="surface surface flex flex-col items-center gap-4 px-6 py-14 text-center">
+              <span className="grid size-12 place-items-center rounded-2xl border border-line-strong bg-raised text-brand-strong">
+                <ClockIcon size={22} />
+              </span>
+              <div>
+                <h2 className="text-base">No sessions logged yet</h2>
+                <p className="mx-auto mt-2 max-w-sm text-[0.9375rem] leading-relaxed text-mute">
+                  Add one entry per work session. Entries are stored in this browser, so fill in the log on
+                  the device you&rsquo;ll use for your final export.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm no-print"
+                onClick={() => setEntries([EMPTY_ENTRY()])}
+              >
+                <PlusIcon size={15} />
+                Add the first entry
+              </button>
+            </div>
+          </Reveal>
+        ) : (
+          <ul className="flex flex-col gap-4">
+            {entries.map((entry, index) => (
+              <li key={entry.id} className="surface p-5">
+                <div className="flex items-center gap-3">
+                  <span className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">
+                    Session {String(index + 1).padStart(2, "0")}
+                  </span>
+                  {parseFloat(entry.hours) > 0 && (
+                    <span className="chip tag-brand">{parseFloat(entry.hours)} h</span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeEntry(entry.id)}
+                    className="btn btn-ghost btn-sm no-print ml-auto"
+                    aria-label={`Remove session ${index + 1}`}
+                  >
+                    <TrashIcon size={14} />
+                    Remove
+                  </button>
+                </div>
+
+                <div className="mt-4 grid gap-3.5 sm:grid-cols-3">
+                  <Field label="Date">
                     <input
                       type="date"
+                      className="field"
                       value={entry.date}
                       onChange={(e) => updateEntry(entry.id, { date: e.target.value })}
                     />
-                  </td>
-                  <td>
+                  </Field>
+                  <Field label="Student">
                     <input
                       type="text"
+                      className="field"
                       value={entry.student}
                       placeholder="Name"
                       onChange={(e) => updateEntry(entry.id, { student: e.target.value })}
                     />
-                  </td>
-                  <td>
+                  </Field>
+                  <Field label="Hours">
                     <input
                       type="number"
                       min="0"
                       step="0.25"
+                      className="field"
                       value={entry.hours}
+                      placeholder="0"
                       onChange={(e) => updateEntry(entry.id, { hours: e.target.value })}
                     />
-                  </td>
-                  <td>
+                  </Field>
+                  <Field label="Task" className="sm:col-span-3">
                     <input
                       type="text"
+                      className="field"
                       value={entry.task}
                       placeholder="What was worked on"
                       onChange={(e) => updateEntry(entry.id, { task: e.target.value })}
                     />
-                  </td>
-                  <td className="no-print">
-                    <button className="btn btn-secondary" onClick={() => removeEntry(entry.id)}>
-                      Remove
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              {entries.length > 0 && (
-                <tr>
-                  <td colSpan={2} />
-                  <td className="mono" style={{ fontWeight: 600 }}>{totalHours}</td>
-                  <td className="text-secondary">total hours</td>
-                  <td className="no-print" />
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                  </Field>
+                </div>
+              </li>
+            ))}
 
-        <div className="no-print" style={{ display: "flex", gap: "var(--space-3)" }}>
-          <button className="btn btn-secondary" onClick={() => setEntries((prev) => [...prev, EMPTY_ENTRY()])}>
-            Add entry
-          </button>
-          <button className="btn btn-secondary" onClick={() => window.print()}>
-            Print / save as PDF
-          </button>
-        </div>
+            {entries.length > 0 && (
+              <li className="surface flex items-center justify-between gap-4 border-brand/25 bg-brand/5 p-5">
+                <p className="font-mono text-[0.75rem] tracking-[0.14em] text-faint uppercase">Total</p>
+                <p className="font-mono text-lg font-semibold text-ink">
+                  {totalHours}
+                  <span className="ml-1.5 text-[0.8125rem] font-normal text-faint">hours</span>
+                </p>
+              </li>
+            )}
+          </ul>
+        )}
       </div>
     </div>
   );

@@ -1,13 +1,67 @@
 import { NextResponse } from "next/server";
+import { buildMessages, looksLikeForeignLeak, sanitizeCompletion } from "@/lib/groq-safety";
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MAX_PROMPT_LENGTH = 4000;
 const MAX_TOKENS = 500;
 
+// Reasoning models accept a reasoning_format of parsed|raw|hidden. `parsed`
+// keeps the thinking channel in `message.reasoning` and leaves `message.content`
+// clean, which is the only part we render. Non-reasoning models ignore it.
+const REASONING_FORMAT = "parsed";
+
+type GroqChoice = { message?: { content?: string | null; reasoning?: string | null } };
+type GroqPayload = {
+  choices?: GroqChoice[];
+  model?: string;
+  usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
+  error?: { message?: string };
+};
+
+type Attempt = {
+  content: string;
+  payload: GroqPayload | null;
+  status: number;
+  ok: boolean;
+};
+
+/** One call to Groq. Network failures surface as a thrown error. */
+async function callGroq(
+  apiKey: string,
+  model: string,
+  prompt: string,
+  strict: boolean
+): Promise<Attempt> {
+  const response = await fetch(GROQ_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model,
+      messages: buildMessages(prompt, strict),
+      max_tokens: MAX_TOKENS,
+      temperature: 0.7,
+      reasoning_format: REASONING_FORMAT,
+    }),
+  });
+
+  const payload = (await response.json().catch(() => null)) as GroqPayload | null;
+  const raw = payload?.choices?.[0]?.message?.content ?? "";
+
+  return {
+    content: sanitizeCompletion(raw, prompt),
+    payload,
+    status: response.status,
+    ok: response.ok,
+  };
+}
+
 // One shared key, set by the mentor in the server environment (GROQ_API_KEY),
 // is used for every request — students never see or handle a key at all.
-// Because it's read from process.env and only ever used server-side, it's
-// never sent to the browser, unlike anything prefixed NEXT_PUBLIC_.
+// Because it's read from process.env and only ever used server-side, it's never
+// sent to the browser, unlike anything prefixed NEXT_PUBLIC_.
 export async function POST(request: Request) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
@@ -41,57 +95,81 @@ export async function POST(request: Request) {
 
   const startedAt = Date.now();
 
-  let response: Response;
+  let first: Attempt;
   try {
-    response = await fetch(GROQ_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: [{ role: "user", content: prompt }],
-        max_tokens: MAX_TOKENS,
-        temperature: 0.7,
-        // Reasoning models (openai/gpt-oss-*, qwen/*) generate an internal
-        // "thinking" pass before the real answer. Without this, that raw
-        // reasoning text can leak into the visible response — including,
-        // occasionally, in a different language than the prompt, which is a
-        // known quirk of these models' reasoning channel. Non-reasoning
-        // models ignore this field.
-        reasoning_format: "hidden",
-      }),
-    });
+    first = await callGroq(apiKey, model, prompt, false);
   } catch {
     return NextResponse.json({ error: "Couldn't reach Groq. Try again in a moment." }, { status: 502 });
   }
 
-  const latencyMs = Date.now() - startedAt;
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
+  if (!first.ok) {
     // 429 from Groq here means the *shared class key* hit its rate limit —
     // surface that plainly so a student doesn't think they broke something.
-    if (response.status === 429) {
+    if (first.status === 429) {
       return NextResponse.json(
-        { error: "The class is sending prompts faster than Groq's free tier allows right now — wait about a minute and try again." },
+        {
+          error:
+            "The class is sending prompts faster than Groq's free tier allows right now — wait about a minute and try again.",
+        },
         { status: 429 }
       );
     }
     const message =
-      (data && typeof data === "object" && "error" in data && (data.error as { message?: string })?.message) ||
-      `Groq returned an error (status ${response.status}).`;
+      first.payload?.error?.message ?? `Groq returned an error (status ${first.status}).`;
     return NextResponse.json({ error: message }, { status: 502 });
   }
 
-  const content: string = data?.choices?.[0]?.message?.content ?? "";
-  const usage = data?.usage ?? null;
+  let content = first.content;
+  let payload = first.payload;
+
+  // Some models still leave reasoning text in the visible content, and that
+  // channel is not anchored to the prompt's language — so an English prompt can
+  // come back with Chinese reasoning pasted on top. When that happens (or the
+  // answer came back empty), ask once more with a firmer instruction before
+  // giving up.
+  const needsRetry = !content.trim() || looksLikeForeignLeak(content, prompt);
+
+  if (needsRetry) {
+    try {
+      const second = await callGroq(apiKey, model, prompt, true);
+      const secondClean = second.ok && second.content.trim() && !looksLikeForeignLeak(second.content, prompt);
+      const secondUsable = second.ok && second.content.trim() && !content.trim();
+
+      if (secondClean || secondUsable) {
+        content = second.content;
+        payload = second.payload;
+      }
+    } catch {
+      // Keep whatever the first pass produced; the checks below decide.
+    }
+  }
+
+  if (!content.trim()) {
+    return NextResponse.json(
+      {
+        error:
+          "The model returned only its internal reasoning instead of an answer. Try rephrasing the prompt, or pick a different model.",
+      },
+      { status: 502 }
+    );
+  }
+
+  if (looksLikeForeignLeak(content, prompt)) {
+    return NextResponse.json(
+      {
+        error:
+          "The model answered in the wrong language. Try again, rephrase the prompt, or switch to a different model.",
+      },
+      { status: 502 }
+    );
+  }
+
+  const latencyMs = Date.now() - startedAt;
 
   return NextResponse.json({
     content,
-    model: data?.model ?? model,
-    usage,
+    model: payload?.model ?? model,
+    usage: payload?.usage ?? null,
     latencyMs,
   });
 }

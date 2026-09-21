@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useProgress } from "@/lib/progress-context";
+import { AlertIcon, CheckIcon, PlayIcon, SpinnerIcon } from "@/components/ui/Icons";
 
 const FALLBACK_MODELS = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "openai/gpt-oss-20b", "openai/gpt-oss-120b"];
 const DEFAULT_MODEL = "llama-3.1-8b-instant"; // highest free-tier rate limit — best fit for a shared classroom key
+const MAX_PROMPT_LENGTH = 4000;
 
 const DEFAULT_PROMPT_A = "Write about dogs.";
 const DEFAULT_PROMPT_B =
@@ -22,33 +24,71 @@ type RunState =
   | { status: "error"; message: string }
   | ({ status: "done" } & RunResult);
 
-function ResponsePanel({ label, prompt, state }: { label: string; prompt: string; state: RunState }) {
+function LoadingLines() {
   return (
-    <div className="stack" style={{ gap: "var(--space-2)", flex: 1, minWidth: 0 }}>
-      <p style={{ fontWeight: 500, fontSize: "0.875rem" }}>{label}</p>
-      <div
-        className="feedback"
-        style={{
-          minHeight: "8rem",
-          maxHeight: "22rem",
-          overflowY: "auto",
-          whiteSpace: "pre-wrap",
-          fontSize: "0.9375rem",
-        }}
-      >
-        {state.status === "idle" && <span className="text-secondary">Response will appear here.</span>}
-        {state.status === "loading" && <span className="text-secondary">Waiting on Groq&hellip;</span>}
-        {state.status === "error" && <span style={{ color: "#b3261e" }}>{state.message}</span>}
-        {state.status === "done" && state.content}
-      </div>
-      {state.status === "done" && (
-        <p className="mono text-secondary" style={{ fontSize: "0.75rem" }}>
-          {state.latencyMs}ms
-          {state.usage?.completion_tokens != null && ` · ${state.usage.completion_tokens} tokens out`}
-          {state.usage?.total_tokens != null && ` · ${state.usage.total_tokens} tokens total`}
+    <div className="flex flex-col gap-3" aria-hidden="true">
+      {[92, 78, 60].map((width) => (
+        <span key={width} className="block h-2.5 animate-pulse rounded-[2px] bg-line" style={{ width: `${width}%` }} />
+      ))}
+      <span className="mono mt-1 inline-flex items-center gap-2 text-[0.875rem] text-faint">
+        waiting on groq
+        <span className="animate-caret inline-block h-3.5 w-[2px] bg-brand" />
+      </span>
+    </div>
+  );
+}
+
+function ResponsePanel({
+  badge,
+  prompt,
+  state,
+  accent,
+}: {
+  badge: string;
+  prompt: string;
+  state: RunState;
+  accent: boolean;
+}) {
+  return (
+    <div className="flex min-w-0 flex-col">
+      <div className="flex items-baseline justify-between gap-3">
+        <p className={`text-[0.9375rem] font-semibold ${accent ? "text-brand" : "text-ink"}`}>
+          Response {badge}
         </p>
-      )}
-      {!prompt.trim() && <p className="text-secondary" style={{ fontSize: "0.75rem" }}>Enter a prompt above to run this one.</p>}
+        {state.status === "done" && (
+          <p className="mono text-[0.8125rem] text-faint">
+            {state.latencyMs}ms
+            {state.usage?.completion_tokens != null && ` · ${state.usage.completion_tokens} tok`}
+          </p>
+        )}
+      </div>
+
+      <div
+        className="mt-2.5 min-h-[11rem] flex-1 overflow-y-auto border border-line bg-canvas p-4"
+        style={{ maxHeight: "24rem" }}
+        role="region"
+        aria-label={`Response ${badge} output`}
+        aria-live="polite"
+      >
+        {state.status === "idle" && (
+          <p className="mono text-[0.875rem] text-faint">
+            {prompt.trim() ? "ready — press run" : "enter a prompt to run this one"}
+          </p>
+        )}
+
+        {state.status === "loading" && <LoadingLines />}
+
+        {state.status === "error" && (
+          <p className="flex gap-3 text-[0.9375rem] leading-relaxed text-bad">
+            <AlertIcon size={16} className="mt-1 shrink-0" />
+            <span>{state.message}</span>
+          </p>
+        )}
+
+        {state.status === "done" && (
+          <p className="whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-body">{state.content}</p>
+        )}
+      </div>
     </div>
   );
 }
@@ -65,7 +105,8 @@ export function GroqPlayground() {
 
   const done = hydrated && isActivityComplete("tools-groqlab");
   const running = resultA.status === "loading" || resultB.status === "loading";
-  const canRun = Boolean(promptA.trim() || promptB.trim()) && !running && modelsError === null;
+  const tooLong = promptA.length > MAX_PROMPT_LENGTH || promptB.length > MAX_PROMPT_LENGTH;
+  const canRun = Boolean(promptA.trim() || promptB.trim()) && !running && modelsError === null && !tooLong;
 
   useEffect(() => {
     let cancelled = false;
@@ -117,50 +158,114 @@ export function GroqPlayground() {
     if (outcomes.some(Boolean)) completeActivity("tools-groqlab");
   }
 
+  function swapPrompts() {
+    setPromptA(promptB);
+    setPromptB(promptA);
+    setResultA({ status: "idle" });
+    setResultB({ status: "idle" });
+  }
+
+  function resetPrompts() {
+    setPromptA(DEFAULT_PROMPT_A);
+    setPromptB(DEFAULT_PROMPT_B);
+    setResultA({ status: "idle" });
+    setResultB({ status: "idle" });
+  }
+
   return (
-    <div className="stack" style={{ gap: "var(--space-6)" }}>
+    <div className="surface">
+      <div className="flex flex-wrap items-end gap-x-6 gap-y-4 border-b border-line px-5 py-4">
+        <label className="flex min-w-[14rem] flex-1 flex-col">
+          <span className="field-label">Model</span>
+          <select className="field" value={model} onChange={(e) => setModel(e.target.value)}>
+            {models.map((m) => (
+              <option key={m} value={m}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="min-w-0 flex-1 pb-2.5 text-[0.875rem] leading-relaxed text-faint">
+          Both prompts run on this one model, so the only variable is your wording.
+        </p>
+      </div>
+
       {done && (
-        <p>
-          <strong>Completed</strong> — 40 XP earned. Keep experimenting below any time.
+        <p className="border-b border-line px-5 py-3 text-[0.875rem] text-mute">
+          <span className="text-ok">+40 XP</span> — you can keep experimenting below any time.
         </p>
       )}
 
       {modelsError && (
-        <p className="feedback" style={{ borderColor: "#b3261e" }}>
-          {modelsError}
+        <p className="flex gap-3 border-b border-line px-5 py-4 text-[0.9375rem] leading-relaxed text-mute">
+          <AlertIcon size={17} className="mt-1 shrink-0 text-warn" />
+          <span>{modelsError}</span>
         </p>
       )}
 
-      <label className="stack" style={{ gap: "var(--space-2)", maxWidth: "24rem" }}>
-        <span style={{ fontSize: "0.875rem", fontWeight: 500 }}>Model (used for both prompts, so the only variable is your wording)</span>
-        <select value={model} onChange={(e) => setModel(e.target.value)}>
-          {models.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
+      <div className="px-5 py-6">
+        <div className="grid gap-5 lg:grid-cols-2 lg:gap-8">
+          {(
+            [
+              { badge: "A", value: promptA, set: setPromptA, accent: true },
+              { badge: "B", value: promptB, set: setPromptB, accent: false },
+            ]
+          ).map((editor) => (
+            <label key={editor.badge} className="flex flex-col">
+              <span className="flex items-baseline justify-between gap-3">
+                <span className={`text-[0.9375rem] font-semibold ${editor.accent ? "text-brand" : "text-ink"}`}>
+                  Prompt {editor.badge}
+                </span>
+                <span className={`mono text-[0.8125rem] ${editor.value.length > MAX_PROMPT_LENGTH ? "text-bad" : "text-faint"}`}>
+                  {editor.value.length}/{MAX_PROMPT_LENGTH}
+                </span>
+              </span>
+              <textarea
+                rows={4}
+                maxLength={MAX_PROMPT_LENGTH + 200}
+                className="field mt-2.5"
+                value={editor.value}
+                onChange={(e) => editor.set(e.target.value)}
+                placeholder={editor.badge === "A" ? "A vague version…" : "A specific version…"}
+              />
+            </label>
           ))}
-        </select>
-      </label>
-
-      <div className="stack" style={{ gap: "var(--space-4)" }}>
-        <div style={{ display: "flex", gap: "var(--space-6)", flexWrap: "wrap" }}>
-          <label className="stack" style={{ gap: "var(--space-2)", flex: 1, minWidth: "16rem" }}>
-            <span style={{ fontSize: "0.875rem" }}>Prompt A</span>
-            <textarea rows={4} value={promptA} onChange={(e) => setPromptA(e.target.value)} />
-          </label>
-          <label className="stack" style={{ gap: "var(--space-2)", flex: 1, minWidth: "16rem" }}>
-            <span style={{ fontSize: "0.875rem" }}>Prompt B</span>
-            <textarea rows={4} value={promptB} onChange={(e) => setPromptB(e.target.value)} />
-          </label>
         </div>
 
-        <button className="btn btn-primary" style={{ alignSelf: "flex-start" }} disabled={!canRun} onClick={runComparison}>
-          {running ? "Running both prompts…" : "Run comparison"}
-        </button>
+        <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <button type="button" className="btn btn-primary" disabled={!canRun} onClick={runComparison}>
+            {running ? (
+              <>
+                <SpinnerIcon size={17} className="animate-spin" />
+                Running both prompts…
+              </>
+            ) : (
+              <>
+                <PlayIcon size={16} />
+                Run comparison
+              </>
+            )}
+          </button>
+          <button type="button" className="btn btn-quiet" onClick={swapPrompts} disabled={running}>
+            Swap A and B
+          </button>
+          <button type="button" className="btn btn-quiet" onClick={resetPrompts} disabled={running}>
+            Reset prompts
+          </button>
+          {tooLong && <span className="tag tag-bad">prompt too long</span>}
+        </div>
 
-        <div style={{ display: "flex", gap: "var(--space-6)", flexWrap: "wrap" }}>
-          <ResponsePanel label="Response A" prompt={promptA} state={resultA} />
-          <ResponsePanel label="Response B" prompt={promptB} state={resultB} />
+        <div className="mt-8 grid gap-6 border-t border-line pt-7 lg:grid-cols-2 lg:gap-8">
+          <ResponsePanel badge="A" prompt={promptA} state={resultA} accent />
+          <ResponsePanel badge="B" prompt={promptB} state={resultB} accent={false} />
+        </div>
+
+        <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 border-t border-line pt-5 text-[0.8125rem] text-faint">
+          <span className="inline-flex items-center gap-2">
+            <CheckIcon size={13} />
+            Shared class key — no account needed
+          </span>
+          <span>Answers match your prompt&apos;s language</span>
         </div>
       </div>
     </div>
