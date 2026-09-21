@@ -529,6 +529,29 @@
     color: var(--color-on-brand);
   }
 
+  .route-loading {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 70;
+    height: 3px;
+    overflow: hidden;
+    pointer-events: none;
+    background: transparent;
+  }
+
+  .route-loading span {
+    display: block;
+    width: 38%;
+    height: 100%;
+    background: var(--color-brand);
+    animation: route-loading 0.65s var(--ease-out) infinite alternate;
+  }
+
+  @keyframes route-loading {
+    from { transform: translateX(-100%); }
+    to { transform: translateX(270%); }
+  }
+
   .theme-toggle-icon {
     display: grid;
     place-items: center;

@@ -31,15 +31,26 @@ export function NavBar() {
   const closeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    const current = document.documentElement.dataset.theme;
-    if (current === "light" || current === "dark") setTheme(current);
+    const syncTheme = () => {
+      const current = document.documentElement.dataset.theme;
+      if (current === "light" || current === "dark") setTheme(current);
+    };
+
+    syncTheme();
+    window.addEventListener("storage", syncTheme);
+    return () => window.removeEventListener("storage", syncTheme);
   }, []);
 
   function toggleTheme() {
-    const next = theme === "dark" ? "light" : "dark";
+    const current = document.documentElement.dataset.theme === "light" ? "light" : "dark";
+    const next = current === "dark" ? "light" : "dark";
     document.documentElement.dataset.theme = next;
     document.documentElement.style.colorScheme = next;
-    window.localStorage.setItem("ai-portal-theme", next);
+    try {
+      window.localStorage.setItem("ai-portal-theme", next);
+    } catch {
+      // Private browsing can block storage; the active page still changes.
+    }
     setTheme(next);
   }
 
@@ -87,6 +98,7 @@ export function NavBar() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
+                    prefetch={process.env.NODE_ENV === "production"}
                     aria-current={active ? "page" : undefined}
                     className={`relative flex h-20 items-center px-3 text-[1rem] leading-none transition-colors duration-150 ${
                       active ? "font-semibold text-ink" : "text-mute hover:text-ink"
@@ -121,6 +133,7 @@ export function NavBar() {
             type="button"
             onClick={toggleTheme}
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+            aria-pressed={theme === "light"}
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             className="theme-toggle grid size-10 cursor-pointer place-items-center rounded-[3px] border border-line-strong text-ink transition-colors duration-150 hover:border-brand hover:bg-surface"
           >
@@ -161,6 +174,7 @@ export function NavBar() {
                 <li key={link.href} className="border-b border-line last:border-b-0">
                   <Link
                     href={link.href}
+                    prefetch={process.env.NODE_ENV === "production"}
                     aria-current={active ? "page" : undefined}
                     className={`flex items-center justify-between gap-4 py-3.5 text-[1.0625rem] transition-colors duration-150 ${
                       active ? "font-semibold text-brand" : "text-ink hover:text-brand"

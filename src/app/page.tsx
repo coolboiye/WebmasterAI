@@ -34,7 +34,7 @@ export default function HomePage() {
   return (
     <>
       {/* ------------------------------------------------------------- hero */}
-      <section className="band pt-16 pb-8 sm:pt-24 sm:pb-12">
+      <section className="band pt-10 pb-10 sm:pt-14 sm:pb-14 lg:flex lg:min-h-[36rem] lg:items-center lg:py-16">
         <div className="shell">
           <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="animate-rise lg:col-span-7">
@@ -163,7 +163,13 @@ export default function HomePage() {
       <section className="section-rule border-line">
         <div className="shell flex min-h-32 items-center justify-center py-10 sm:min-h-40 sm:py-12">
           <p className="text-center text-[1.125rem] font-semibold leading-relaxed text-ink sm:text-[1.25rem]">
-            {Object.keys(ACTIVITIES).length} activities <span className="px-2 text-brand" aria-hidden="true">·</span> {TOTAL_XP} XP <span className="px-2 text-brand" aria-hidden="true">·</span> {Object.keys(BADGES).length} badges <span className="px-2 text-brand" aria-hidden="true">·</span> three modules
+            {Object.keys(ACTIVITIES).length} activities
+            <span className="px-2 text-brand" aria-hidden="true">·</span>
+            {TOTAL_XP} XP
+            <span className="px-2 text-brand" aria-hidden="true">·</span>
+            {Object.keys(BADGES).length} badges
+            <span className="px-2 text-brand" aria-hidden="true">·</span>
+            3 modules
           </p>
         </div>
       </section>
