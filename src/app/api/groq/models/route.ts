@@ -4,7 +4,7 @@ const GROQ_MODELS_URL = "https://api.groq.com/openai/v1/models";
 
 // Excludes speech-to-text (Whisper) and safety-classifier models, which
 // aren't chat models and would just clutter the comparison dropdown.
-const EXCLUDE_PATTERNS = [/whisper/i, /guard/i, /safeguard/i, /tts/i];
+const EXCLUDE_PATTERNS = [/whisper/i, /guard/i, /safeguard/i, /tts/i, /canopylabs/i, /allam-2-7b/i, /groq/i];
 
 export async function GET() {
   const apiKey = process.env.GROQ_API_KEY;
