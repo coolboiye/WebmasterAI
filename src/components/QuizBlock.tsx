@@ -73,7 +73,7 @@ export function QuizBlock({ activityId, questions }: { activityId: ActivityId; q
           {questions.map((q, i) => (
             <span
               key={q.id}
-              className={`h-[3px] flex-1 transition-colors duration-150 ${
+              className={`h-[3px] flex-1 transition-colors duration-300 ease-out ${
                 i < index || (i === index && isCorrect)
                   ? "bg-brand"
                   : i === index
@@ -101,12 +101,12 @@ export function QuizBlock({ activityId, questions }: { activityId: ActivityId; q
                 onClick={() => selectOption(option.id)}
                 disabled={isCorrect}
                 aria-pressed={isChosen}
-                className={`flex cursor-pointer items-start gap-4 rounded-[3px] border px-4 py-3.5 text-left text-[1rem] leading-relaxed transition-colors duration-150 disabled:cursor-default ${
+                className={`option-row flex cursor-pointer items-start gap-4 rounded-[3px] border px-4 py-3.5 text-left text-[1rem] leading-relaxed disabled:cursor-default ${
                   state === "correct"
                     ? "border-ok bg-ok-soft text-ink"
                     : state === "incorrect"
                       ? "animate-flash border-bad bg-bad-soft text-ink"
-                      : "border-line-strong text-body hover:border-faint hover:bg-surface hover:text-ink"
+                      : "border-line-strong text-body hover:border-faint hover:bg-wash hover:text-ink"
                 }`}
               >
                 <span
@@ -126,7 +126,7 @@ export function QuizBlock({ activityId, questions }: { activityId: ActivityId; q
         {selected && (
           <div
             role="status"
-            className={`mt-6 border-l-2 py-1 pl-5 ${
+            className={`animate-settle mt-6 border-l-2 py-1 pl-5 ${
               isCorrect ? "border-ok" : "border-bad"
             }`}
           >

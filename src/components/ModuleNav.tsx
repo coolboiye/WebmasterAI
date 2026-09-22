@@ -33,19 +33,19 @@ export function ModuleNav({ current }: { current: ModuleId }) {
       </div>
 
       <p className="mono order-last text-center text-[0.8125rem] text-faint sm:order-none">
-        <span className="text-brand">{String(index + 1).padStart(2, "0")}</span> / 03
+        <span className="text-brand-ink">{String(index + 1).padStart(2, "0")}</span> / 03
       </p>
 
       <div className="sm:justify-self-end">
         {nextId ? (
           <Link href={MODULES[nextId].path} className="btn btn-primary module-nav-button" rel="next">
             <span className="truncate">Next: {SHORT[nextId]}</span>
-            <ArrowRightIcon size={16} />
+            <ArrowRightIcon size={16} className="btn-arrow" />
           </Link>
         ) : (
           <Link href="/progress" className="btn btn-primary module-nav-button">
             View your progress
-            <ArrowRightIcon size={16} />
+            <ArrowRightIcon size={16} className="btn-arrow" />
           </Link>
         )}
       </div>

@@ -39,7 +39,7 @@ export function AuthButton({ compact = false }: { compact?: boolean }) {
         <button
           type="button"
           onClick={signOut}
-          className="grid size-9 cursor-pointer place-items-center rounded-[3px] text-mute transition-colors duration-150 hover:bg-surface hover:text-ink"
+          className="row-hover grid size-9 cursor-pointer place-items-center rounded-[3px] text-mute hover:text-ink"
           aria-label="Sign out"
           title={`Sign out${profile?.displayName ? ` of ${profile.displayName}` : ""}`}
         >

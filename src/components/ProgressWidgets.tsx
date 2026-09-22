@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { ACTIVITIES, BADGES, BadgeId, MODULES, ModuleId } from "@/lib/progress-data";
 import { useProgress } from "@/lib/progress-context";
 import { ArrowRightIcon, CheckIcon } from "@/components/ui/Icons";
@@ -46,9 +46,10 @@ function useCountUp(value: number, active: boolean, duration = 700) {
 }
 
 function Rail({ pct, tone }: { pct: number; tone?: "ok" }) {
+  const scale = Math.min(100, Math.max(0, pct)) / 100;
   return (
     <div className="rail" role="presentation">
-      <div className="rail-fill" data-tone={tone} style={{ width: `${Math.min(100, Math.max(0, pct))}%` }} />
+      <div className="rail-fill" data-tone={tone} style={{ "--rail-scale": scale } as CSSProperties} />
     </div>
   );
 }
@@ -139,14 +140,17 @@ export function ModuleList() {
           <li key={id} className="border-b border-line">
             <Link
               href={mod.path}
-              className="module-link group -mx-3 grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 px-3 py-6 transition-[background-color,transform] duration-200 hover:translate-x-[2px] hover:bg-surface sm:grid-cols-[2.5rem_minmax(0,1fr)_11rem] sm:items-center sm:gap-x-8"
+              className="module-link group -mx-3 grid grid-cols-[2.5rem_minmax(0,1fr)] items-start gap-x-4 gap-y-3 px-3 py-6 sm:grid-cols-[2.5rem_minmax(0,1fr)_11rem] sm:items-center sm:gap-x-8"
             >
-              <span className="mono pt-1 text-[0.875rem] text-brand sm:pt-0">
+              <span aria-hidden="true" className="module-wash" />
+              <span aria-hidden="true" className="module-accent" />
+
+              <span className="module-inner relative z-10 mono pt-1 text-[0.875rem] text-brand-ink sm:pt-0">
                 {String(index + 1).padStart(2, "0")}
               </span>
 
-              <span className="min-w-0">
-                <span className="block text-[1.125rem] font-semibold tracking-[-0.015em] text-ink transition-colors duration-150 group-hover:text-brand">
+              <span className="module-inner relative z-10 min-w-0">
+                <span className="block text-[1.125rem] font-semibold tracking-[-0.015em] text-ink">
                   {mod.title}
                 </span>
                 <span className="mt-1.5 block text-[0.9375rem] leading-relaxed text-mute">
@@ -157,7 +161,9 @@ export function ModuleList() {
                 </span>
               </span>
 
-              <span className="col-start-2 flex items-center gap-4 sm:col-start-auto sm:flex-col sm:items-end sm:gap-2">
+              {/* `sm:pr-4` keeps the XP text and its rail just inside the row's
+                  hover wash instead of flush against the page edge. */}
+              <span className="module-inner relative z-10 col-start-2 flex items-center gap-4 sm:col-start-auto sm:flex-col sm:items-end sm:gap-2 sm:pr-4">
                 <span className="mono hidden text-[0.8125rem] text-mute sm:block">
                   {doneCount}/{total} done · {moduleXp} XP
                 </span>
@@ -212,10 +218,10 @@ export function NextStepLink({ href, children }: { href: string; children: React
   return (
     <Link
       href={href}
-      className="group inline-flex items-center gap-2 text-[0.9375rem] font-medium text-brand transition-colors duration-150 hover:text-brand-strong"
+      className="group inline-flex items-center gap-2 text-[0.9375rem] font-medium text-brand-ink transition-colors duration-200 hover:text-ink"
     >
       {children}
-      <ArrowRightIcon size={16} className="transition-transform duration-150 group-hover:translate-x-0.5" />
+      <ArrowRightIcon size={16} className="transition-transform duration-200 ease-out group-hover:translate-x-1" />
     </Link>
   );
 }

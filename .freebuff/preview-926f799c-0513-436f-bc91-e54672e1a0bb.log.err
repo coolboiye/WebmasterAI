@@ -40,10 +40,6 @@
     at JSON.parse (<anonymous>) {
   page: '/'
 }
- ⨯ [Error [InvariantError]: Invariant: Expected clientReferenceManifest to be defined. This is a bug in Next.js.]
- ⨯ [Error [InvariantError]: Invariant: Expected clientReferenceManifest to be defined. This is a bug in Next.js.] {
-  page: '/'
-}
  ⨯ SyntaxError: Unexpected end of JSON input
     at JSON.parse (<anonymous>) {
   page: '/'
@@ -51,11 +47,6 @@
  ⨯ SyntaxError: Unexpected end of JSON input
     at JSON.parse (<anonymous>) {
   page: '/'
-}
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- ⨯ SyntaxError: Unexpected end of JSON input
-    at JSON.parse (<anonymous>) {
-  page: '/modules/tools'
 }
  ⨯ SyntaxError: Unexpected end of JSON input
     at JSON.parse (<anonymous>) {
@@ -77,7 +68,30 @@
     at JSON.parse (<anonymous>) {
   page: '/'
 }
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
  ⨯ SyntaxError: Unexpected end of JSON input
     at JSON.parse (<anonymous>) {
   page: '/'

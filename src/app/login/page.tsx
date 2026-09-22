@@ -14,7 +14,7 @@ function LoginContent() {
   return (
     <div className="shell flex min-h-[70vh] items-center justify-center py-16">
       <div className="w-full max-w-md">
-        <div className="surface surface animate-rise p-7 sm:p-9">
+        <div className="surface animate-rise p-7 sm:p-9">
           <div className="flex items-center gap-3">
             <BrandMark />
             <span className="font-mono text-[0.6875rem] tracking-[0.2em] text-faint uppercase">

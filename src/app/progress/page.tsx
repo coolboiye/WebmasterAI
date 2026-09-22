@@ -45,7 +45,7 @@ export default function ProgressPage() {
                 <>
                   Signed in as <span className="text-ink">{profile?.displayName}</span> — saved to your
                   account, synced across devices, and visible on the{" "}
-                  <Link href="/leaderboard" className="text-brand-soft underline underline-offset-4 transition-colors hover:text-brand-strong">
+                  <Link href="/leaderboard" className="text-brand-soft underline underline-offset-4 transition-colors duration-200 hover:text-ink">
                     leaderboard
                   </Link>
                   .
@@ -162,7 +162,7 @@ export default function ProgressPage() {
                 Reset progress
               </button>
             ) : (
-              <div className="surface animate-pop flex flex-wrap items-center gap-4 border-bad/30 bg-bad-soft/40 p-5">
+              <div className="surface animate-settle flex flex-wrap items-center gap-4 border-bad/30 bg-bad-soft/40 p-5">
                 <AlertIcon size={19} className="shrink-0 text-bad" />
                 <p className="min-w-[12rem] flex-1 text-[0.9375rem] leading-relaxed text-mute">
                   Clear every activity completed in this browser? This can&rsquo;t be undone.

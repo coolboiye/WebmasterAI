@@ -37,31 +37,33 @@ export default function HomePage() {
       <section className="band pt-10 pb-10 sm:pt-14 sm:pb-14 lg:flex lg:min-h-[36rem] lg:items-center lg:py-16">
         <div className="shell">
           <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
-            <div className="animate-rise lg:col-span-7">
-              <h1 className="max-w-[15ch]">
+            {/* Staggered entrance: heading, then copy, then actions, so the hero
+                arrives as one motion instead of three separate pops. */}
+            <div className="lg:col-span-7">
+              <h1 className="animate-rise max-w-[15ch]">
                 Learn what AI is. Then decide how to use it.
               </h1>
 
-              <p className="measure mt-7 text-[1.125rem] leading-relaxed text-body">
+              <p className="animate-rise measure mt-7 text-[1.125rem] leading-relaxed text-body [animation-delay:70ms]">
                 A practical guide to the tools you already see everywhere — how they work, where they help, and when to pause before trusting the answer.
               </p>
 
-              <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <div className="animate-rise mt-9 flex flex-wrap items-center gap-x-6 gap-y-3 [animation-delay:140ms]">
                 <Link href="/modules/fundamentals" className="btn btn-primary">
                   Start with Concepts
-                  <ArrowRightIcon size={17} />
+                  <ArrowRightIcon size={17} className="btn-arrow" />
                 </Link>
                 <Link
                   href="/modules/tools"
-                  className="group inline-flex items-center gap-2 text-[0.9375rem] font-medium text-mute transition-colors duration-150 hover:text-ink"
+                  className="group inline-flex items-center gap-2 text-[0.9375rem] font-medium text-mute transition-colors duration-200 hover:text-ink"
                 >
-                  <TerminalIcon size={16} />
+                  <TerminalIcon size={16} className="transition-transform duration-200 ease-out group-hover:-translate-y-px" />
                   Or jump to the live playground
                 </Link>
               </div>
             </div>
 
-            <div className="animate-pop lg:col-span-5">
+            <div className="animate-pop lg:col-span-5 [animation-delay:110ms]">
               <ProgressPanel />
             </div>
           </div>
@@ -148,7 +150,7 @@ export default function HomePage() {
               <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <Link href="/modules/fundamentals" className="btn btn-primary">
                   Begin module 1
-                  <ArrowRightIcon size={17} />
+                  <ArrowRightIcon size={17} className="btn-arrow" />
                 </Link>
                 <NextStepLink href="/progress">
                   See your progress dashboard (4 badges)
@@ -164,11 +166,11 @@ export default function HomePage() {
         <div className="shell flex min-h-32 items-center justify-center py-10 sm:min-h-40 sm:py-12">
           <p className="text-center text-[1.125rem] font-semibold leading-relaxed text-ink sm:text-[1.25rem]">
             {Object.keys(ACTIVITIES).length} activities
-            <span className="px-2 text-brand" aria-hidden="true">·</span>
+            <span className="px-2 text-brand-ink" aria-hidden="true">·</span>
             {TOTAL_XP} XP
-            <span className="px-2 text-brand" aria-hidden="true">·</span>
+            <span className="px-2 text-brand-ink" aria-hidden="true">·</span>
             {Object.keys(BADGES).length} badges
-            <span className="px-2 text-brand" aria-hidden="true">·</span>
+            <span className="px-2 text-brand-ink" aria-hidden="true">·</span>
             3 modules
           </p>
         </div>

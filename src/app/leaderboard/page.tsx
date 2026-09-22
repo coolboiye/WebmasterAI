@@ -78,7 +78,7 @@ export default async function LeaderboardPage() {
                   the{" "}
                   <Link
                     href="/progress"
-                    className="text-brand-soft underline underline-offset-4 transition-colors hover:text-brand-strong"
+                    className="text-brand-soft underline underline-offset-4 transition-colors duration-200 hover:text-ink"
                   >
                     Progress
                   </Link>{" "}

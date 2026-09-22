@@ -52,7 +52,7 @@ function ResponsePanel({
   return (
     <div className="flex min-w-0 flex-col">
       <div className="flex items-baseline justify-between gap-3">
-        <p className={`text-[0.9375rem] font-semibold ${accent ? "text-brand" : "text-ink"}`}>
+        <p className={`text-[0.9375rem] font-semibold ${accent ? "text-brand-ink" : "text-ink"}`}>
           Response {badge}
         </p>
         {state.status === "done" && (
@@ -86,7 +86,9 @@ function ResponsePanel({
         )}
 
         {state.status === "done" && (
-          <p className="whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-body">{state.content}</p>
+          <p className="animate-settle whitespace-pre-wrap text-[0.9375rem] leading-relaxed text-body">
+            {state.content}
+          </p>
         )}
       </div>
     </div>
@@ -213,7 +215,7 @@ export function GroqPlayground() {
           ).map((editor) => (
             <label key={editor.badge} className="flex flex-col">
               <span className="flex items-baseline justify-between gap-3">
-                <span className={`text-[0.9375rem] font-semibold ${editor.accent ? "text-brand" : "text-ink"}`}>
+                <span className={`text-[0.9375rem] font-semibold ${editor.accent ? "text-brand-ink" : "text-ink"}`}>
                   Prompt {editor.badge}
                 </span>
                 <span className={`mono text-[0.8125rem] ${editor.value.length > MAX_PROMPT_LENGTH ? "text-bad" : "text-faint"}`}>

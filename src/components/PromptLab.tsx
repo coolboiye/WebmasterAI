@@ -64,7 +64,7 @@ export function PromptLab() {
               <div className="grid gap-5 lg:grid-cols-2 lg:gap-10">
                 <label className="flex flex-col">
                   <span className="flex items-baseline gap-3">
-                    <span className="mono text-[0.8125rem] text-brand">
+                    <span className="mono text-[0.8125rem] text-brand-ink">
                       {String(i + 1).padStart(2, "0")}
                     </span>
                     <span className="text-[0.9375rem] text-faint">Given prompt</span>
@@ -100,7 +100,7 @@ export function PromptLab() {
                 </label>
 
                 {revealedThis && (
-                  <div className="border-t border-line pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10">
+                  <div className="animate-settle border-t border-line pt-5 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-10">
                     <p className="text-[0.9375rem] text-faint">Stronger version</p>
                     <p className="mono mt-2 text-[0.9375rem] leading-relaxed text-ink">
                       &ldquo;{round.strong}&rdquo;

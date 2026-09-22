@@ -139,7 +139,7 @@ export function ScenarioWalkthrough() {
           {SCENARIOS.map((s, i) => (
             <span
               key={s.prompt}
-              className={`h-[3px] flex-1 transition-colors duration-150 ${
+              className={`h-[3px] flex-1 transition-colors duration-300 ease-out ${
                 i < index ? "bg-brand" : i === index ? "bg-mute" : "bg-line"
               }`}
             />
@@ -162,15 +162,15 @@ export function ScenarioWalkthrough() {
                 type="button"
                 onClick={() => setChoiceId(choice.id)}
                 aria-pressed={isChosen}
-                className={`flex cursor-pointer items-start gap-4 rounded-[3px] border px-4 py-3.5 text-left text-[1rem] leading-relaxed transition-colors duration-150 ${
+                className={`option-row flex cursor-pointer items-start gap-4 rounded-[3px] border px-4 py-3.5 text-left text-[1rem] leading-relaxed ${
                   isChosen
                     ? "border-brand bg-surface text-ink"
-                    : "border-line-strong text-body hover:border-faint hover:bg-surface hover:text-ink"
+                    : "border-line-strong text-body hover:border-faint hover:bg-wash hover:text-ink"
                 }`}
               >
                 <span
                   aria-hidden="true"
-                  className={`mt-[0.4rem] grid size-4 shrink-0 place-items-center rounded-[2px] border transition-colors duration-150 ${
+                  className={`mt-[0.4rem] grid size-4 shrink-0 place-items-center rounded-[2px] border transition-colors duration-200 ease-out ${
                     isChosen ? "border-brand" : "border-faint"
                   }`}
                 >
@@ -188,7 +188,7 @@ export function ScenarioWalkthrough() {
         {chosen && (
           <div
             role="status"
-            className={`mt-6 border-l-2 py-1 pl-5 ${chosen.recommended ? "border-ok" : "border-brand"}`}
+            className={`animate-settle mt-6 border-l-2 py-1 pl-5 ${chosen.recommended ? "border-ok" : "border-brand"}`}
           >
             <p className="text-[0.9375rem] font-semibold text-ink">
               {chosen.recommended ? "Strongest move" : "Worth reconsidering"}

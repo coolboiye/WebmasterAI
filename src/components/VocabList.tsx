@@ -35,18 +35,18 @@ export function VocabList({ terms }: { terms: Term[] }) {
                 type="button"
                 aria-expanded={isOpen}
                 onClick={() => setOpened((prev) => ({ ...prev, [t.term]: !prev[t.term] }))}
-                className="flex w-full cursor-pointer items-baseline gap-4 py-3.5 text-left transition-colors duration-150 hover:bg-surface"
+                className="row-hover flex w-full cursor-pointer items-baseline gap-4 py-3.5 text-left"
               >
                 <span className="mono w-6 shrink-0 text-[0.8125rem] text-faint">
                   {String(index + 1).padStart(2, "0")}
                 </span>
-                <span className={`flex-1 text-[1rem] ${isOpen ? "font-semibold text-brand" : "text-ink"}`}>
+                <span className={`flex-1 text-[1rem] ${isOpen ? "font-semibold text-brand-ink" : "text-ink"}`}>
                   {t.term}
                 </span>
                 <span
                   aria-hidden="true"
-                  className={`shrink-0 text-[0.875rem] text-faint transition-transform duration-150 ${
-                    isOpen ? "rotate-180 text-brand" : ""
+                  className={`shrink-0 text-[0.875rem] text-faint transition-transform duration-300 ease-out ${
+                    isOpen ? "rotate-180 text-brand-ink" : ""
                   }`}
                 >
                   <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
@@ -57,7 +57,7 @@ export function VocabList({ terms }: { terms: Term[] }) {
 
               {/* 0fr → 1fr keeps the reveal smooth without animating height. */}
               <div
-                className="grid transition-[grid-template-rows] duration-200 ease-out"
+                className="grid transition-[grid-template-rows] duration-300 ease-out"
                 style={{ gridTemplateRows: isOpen ? "1fr" : "0fr" }}
               >
                 <div className="overflow-hidden">

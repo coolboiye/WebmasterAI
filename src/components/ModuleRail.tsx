@@ -41,7 +41,10 @@ export function ModuleRail({ current }: { current: ModuleId }) {
         </div>
         <div className="mt-3">
           <div className="rail">
-            <div className="rail-fill" style={{ width: `${hydrated ? pct : 0}%` }} />
+            <div
+              className="rail-fill"
+              style={{ "--rail-scale": (hydrated ? pct : 0) / 100 } as React.CSSProperties}
+            />
           </div>
         </div>
       </div>
@@ -84,7 +87,7 @@ export function ModuleRail({ current }: { current: ModuleId }) {
           <Link
             key={id}
             href={MODULES[id].path}
-            className="border-b border-line px-5 py-3 text-[0.9375rem] text-mute transition-colors duration-150 last:border-b-0 hover:bg-surface hover:text-brand"
+            className="row-hover border-b border-line px-5 py-3 text-[0.9375rem] text-mute last:border-b-0 hover:text-ink"
           >
             Go to {SHORT[id]}
           </Link>

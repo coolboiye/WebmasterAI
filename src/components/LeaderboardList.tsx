@@ -39,7 +39,7 @@ export function LeaderboardList({ rows, totalXp }: { rows: LeaderboardRow[]; tot
 
             <div className="col-start-2 sm:col-start-auto">
               <div className="rail">
-                <div className="rail-fill" style={{ width: `${width}%` }} />
+                <div className="rail-fill" style={{ "--rail-scale": width / 100 } as React.CSSProperties} />
               </div>
             </div>
 

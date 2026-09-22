@@ -246,7 +246,7 @@ export default function CopyrightPage() {
             </label>
 
             {reviewed && advisorName.trim() && (
-              <p className="animate-rise font-mono text-[0.8125rem] text-brand-soft">
+              <p className="animate-settle font-mono text-[0.8125rem] text-brand-soft">
                 Reviewed by {advisorName.trim()}
               </p>
             )}

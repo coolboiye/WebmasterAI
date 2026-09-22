@@ -10,7 +10,9 @@ type RevealProps = {
 };
 
 /**
- * Fades + lifts its children the first time they scroll into view.
+ * Fades + lifts its children the first time they scroll into view. The lift is
+ * deliberately small and slow (see `--dur-4`) so a whole column of sections
+ * reads as one movement rather than a series of jumps.
  *
  * The hidden state only applies under `html.js` (set by an inline script in the
  * root layout), so with JavaScript disabled the content is simply visible
@@ -49,7 +51,7 @@ export function Reveal({ children, delay = 0, className }: RevealProps) {
     <div
       ref={ref}
       data-reveal=""
-      style={{ "--reveal-delay": `${Math.min(delay, 120)}ms` } as React.CSSProperties}
+      style={{ "--reveal-delay": `${Math.min(delay, 220)}ms` } as React.CSSProperties}
       className={className}
     >
       {children}

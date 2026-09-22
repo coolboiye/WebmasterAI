@@ -51,7 +51,7 @@ export function SiteFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-[0.9375rem] text-mute transition-colors duration-150 hover:text-brand"
+                      className="link-quiet text-[0.9375rem] text-mute hover:text-ink"
                     >
                       {link.label}
                     </Link>
@@ -68,7 +68,7 @@ export function SiteFooter() {
           </p>
           <a
             href="#main"
-            className="self-start text-[0.875rem] text-faint transition-colors duration-150 hover:text-brand sm:self-auto"
+            className="link-quiet self-start text-[0.875rem] text-faint hover:text-ink sm:self-auto"
           >
             Back to top
           </a>

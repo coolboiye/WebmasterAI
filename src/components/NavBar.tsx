@@ -15,7 +15,7 @@ const LINKS = [
   { href: "/progress", label: "Progress" },
   { href: "/leaderboard", label: "Leaderboard" },
   { href: "/copyright", label: "Copyright" },
-  { href: "/worklog", label: "Work log" },
+  { href: "/worklog", label: "Work Log" },
 ];
 
 function isActive(pathname: string, href: string) {
@@ -108,13 +108,13 @@ export function NavBar() {
                     onPointerDown={() => warmRoute(link.href)}
                     onFocus={() => warmRoute(link.href)}
                     aria-current={active ? "page" : undefined}
-                    className={`relative flex h-20 items-center px-3 text-[1rem] leading-none transition-colors duration-150 ${
+                    className={`nav-item flex h-20 items-center px-3 text-[1rem] leading-none whitespace-nowrap transition-colors duration-200 ${
                       active ? "font-semibold text-ink" : "text-mute hover:text-ink"
                     }`}
                   >
                     {link.label}
                     {active && (
-                      <span className="absolute inset-x-3 bottom-0 h-[3px] bg-brand" aria-hidden="true" />
+                      <span className="nav-active absolute inset-x-3 bottom-0 h-[3px] bg-brand" aria-hidden="true" />
                     )}
                   </Link>
                 </li>
@@ -126,7 +126,7 @@ export function NavBar() {
         <div className="flex items-center gap-3">
           <Link
             href="/progress"
-            className="mono hidden text-[0.8125rem] text-mute transition-colors duration-150 hover:text-ink xl:inline"
+            className="mono hidden text-[0.8125rem] text-mute transition-colors duration-200 hover:text-ink xl:inline"
             title={`${hydrated ? xp : 0} of ${totalXp} XP earned`}
           >
             <span className="text-ink">{hydrated ? xp : 0}</span>
@@ -143,7 +143,7 @@ export function NavBar() {
             aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
             aria-pressed={theme === "light"}
             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-            className="theme-toggle grid size-10 cursor-pointer place-items-center rounded-[3px] border border-line-strong text-ink transition-colors duration-150 hover:border-brand hover:bg-surface"
+            className="theme-toggle row-hover grid size-10 cursor-pointer place-items-center rounded-[3px] border border-line-strong text-ink transition-colors duration-150 hover:border-brand"
           >
             <span className="theme-toggle-icon" aria-hidden="true">
               {theme === "dark" ? <SunIcon size={18} /> : <MoonIcon size={18} />}
@@ -157,7 +157,7 @@ export function NavBar() {
             aria-expanded={open}
             aria-controls="mobile-nav"
             aria-label={open ? "Close navigation menu" : "Open navigation menu"}
-            className="grid size-10 cursor-pointer place-items-center rounded-[3px] border border-line-strong text-ink transition-colors duration-150 hover:border-faint hover:bg-surface lg:hidden"
+            className="row-hover grid size-10 cursor-pointer place-items-center rounded-[3px] border border-line-strong text-ink transition-colors duration-150 hover:border-faint lg:hidden"
           >
             {open ? <CloseIcon size={18} /> : <MenuIcon size={18} />}
           </button>
@@ -170,8 +170,8 @@ export function NavBar() {
         id="mobile-nav"
         inert={!open}
         aria-hidden={!open}
-        className={`fixed inset-x-0 top-20 bottom-0 z-40 border-b border-line bg-canvas transition-opacity duration-150 lg:hidden ${
-          open ? "opacity-100" : "pointer-events-none opacity-0"
+        className={`fixed inset-x-0 top-20 bottom-0 z-40 border-b border-line bg-canvas transition-[opacity,transform] duration-200 ease-out lg:hidden ${
+          open ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1.5 opacity-0"
         }`}
       >
         <nav aria-label="Primary mobile" className="shell h-full overflow-y-auto py-2">
@@ -187,8 +187,8 @@ export function NavBar() {
                     onPointerDown={() => warmRoute(link.href)}
                     onFocus={() => warmRoute(link.href)}
                     aria-current={active ? "page" : undefined}
-                    className={`flex items-center justify-between gap-4 py-3.5 text-[1.0625rem] transition-colors duration-150 ${
-                      active ? "font-semibold text-brand" : "text-ink hover:text-brand"
+                    className={`row-hover flex items-center justify-between gap-4 py-3.5 text-[1.0625rem] whitespace-nowrap ${
+                      active ? "font-semibold text-brand-ink" : "text-ink"
                     }`}
                   >
                     {link.label}

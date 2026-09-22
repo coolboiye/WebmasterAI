@@ -26,6 +26,10 @@
   --color-surface: #07151e;
   --color-raised: #0b1c28;
 
+  /* The single hover wash used by every interactive row. A tint rather than a
+     different surface keeps text contrast stable between rest and hover. */
+  --color-wash: color-mix(in srgb, var(--color-brand) 11%, var(--color-surface));
+
   /* ---- lines --------------------------------------------------------- */
   --color-line: #122b38;
   --color-line-strong: #214659;
@@ -36,10 +40,15 @@
   --color-mute: #8ba3b1;
   --color-faint: #6e8d9d;
 
-  /* ---- brand blue ----------------------------------------------------- */
+  /* ---- brand blue -----------------------------------------------------
+     `brand` is the accent for fills (buttons, bars, borders) where it is
+     paired with on-brand text. `brand-ink` is the same accent tuned for small
+     text sitting directly on the canvas — #306bac only reaches ~2.9:1 on the
+     dark canvas, which is not readable at label sizes. */
   --color-brand: #306bac;
   --color-brand-strong: #4f8bd0;
   --color-brand-soft: #a9c8ed;
+  --color-brand-ink: #8fbdf0;
   --color-brand-deep: #214b7d;
   --color-on-brand: #f5f8fc;
 
@@ -73,8 +82,18 @@
   --radius-sm: 3px;
   --radius-md: 4px;
 
-  /* ---- motion (Flat: 150–200ms, no bounce) --------------------------- */
-  --ease-out: cubic-bezier(0.2, 0.75, 0.25, 1);
+  /* ---- motion ---------------------------------------------------------
+     One deceleration curve plus four durations carry every hover, reveal and
+     state change, so the whole interface moves with a single accent. Nothing
+     animates a layout property — opacity and transform only — which is what
+     keeps it fluid rather than stepping. */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --dur-1: 130ms; /* micro: colour, border, press */
+  --dur-2: 220ms; /* default: hover, focus */
+  --dur-3: 360ms; /* movement: transforms, accents */
+  --dur-4: 620ms; /* data: bars, entrances */
 
   --animate-caret: caret 1.05s steps(1) infinite;
   --animate-flash: flash 0.4s var(--ease-out) both;
@@ -109,21 +128,25 @@
     --color-canvas: #f6f9fc;
     --color-surface: #ffffff;
     --color-raised: #edf3f8;
+    --color-wash: color-mix(in srgb, var(--color-brand) 7%, var(--color-surface));
     --color-line: #d7e1eb;
     --color-line-strong: #aebfd0;
     --color-ink: #102238;
     --color-body: #344b61;
-    --color-mute: #5d7388;
+    /* One shade darker than the dark-theme equivalent: on white, the hover wash
+       would otherwise drop body text just under 4.5:1. */
+    --color-mute: #566b80;
     --color-faint: #71879a;
     --color-brand: #306bac;
     --color-brand-strong: #255789;
     --color-brand-soft: #255789;
+    --color-brand-ink: #295c96;
     --color-brand-deep: #1f4775;
     --color-on-brand: #ffffff;
     --color-line-2: #aebfd0;
     --color-line-3: #8fa7bb;
     --color-surface-2: #edf3f8;
-    --color-muted: #5d7388;
+    --color-muted: #566b80;
     --color-subtle: #71879a;
     --color-fg: #102238;
     --color-emerald: #306bac;
@@ -340,6 +363,9 @@
   /* ---- buttons (flat, solid, no shadow or gradient) ------------------- */
 
   .btn {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -356,9 +382,20 @@
     white-space: nowrap;
     cursor: pointer;
     transition:
-      background-color 0.17s var(--ease-out),
-      border-color 0.17s var(--ease-out),
-      color 0.17s var(--ease-out);
+      background-color var(--dur-1) var(--ease-out),
+      border-color var(--dur-1) var(--ease-out),
+      color var(--dur-1) var(--ease-out),
+      transform var(--dur-1) var(--ease-out);
+  }
+
+  /* One pixel of lift on hover, none on press. Enough to feel responsive,
+     small enough to stay out of the way. */
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(0);
   }
 
   .btn:disabled {
@@ -371,8 +408,41 @@
     color: var(--color-on-brand);
   }
 
-  .btn-primary:hover:not(:disabled) {
-    background: var(--color-brand-strong);
+  /* Primary hover: a deeper shade of the same blue sweeps in from the left
+     instead of the fill washing out toward white. The fill sits in the button's
+     own stacking context at z-index -1, so it paints above the button's
+     background but under its label. Two flat colours, no gradient. */
+  .btn-primary::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--color-brand-deep);
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+
+  .btn-primary:hover:not(:disabled)::before,
+  .btn-primary:focus-visible::before {
+    transform: scaleX(1);
+  }
+
+  /* A hairline in the lighter accent sharpens the edge as the fill arrives. */
+  .btn-primary:hover:not(:disabled),
+  .btn-primary:focus-visible {
+    border-color: var(--color-brand-soft);
+  }
+
+  /* Trailing arrows glide forward with the fill. Opt-in, because a leading
+     icon (Google, Play) should stay put. */
+  .btn-arrow {
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+
+  .btn:hover:not(:disabled) .btn-arrow,
+  .btn:focus-visible .btn-arrow {
+    transform: translateX(0.25rem);
   }
 
   .btn-secondary {
@@ -480,22 +550,26 @@
     color: var(--color-ink);
   }
 
-  .animate-rise {
+  .animate-rise,
+  .animate-pop {
+    animation: rise var(--dur-4) var(--ease-out) both;
+  }
+
+  /* Feedback that appears in direct response to a click: short, so it never
+     makes the interface feel like it is waiting on itself. */
+  .animate-settle {
     animation: rise 0.32s var(--ease-out) both;
   }
 
-  .animate-pop {
-    animation: pop 0.3s var(--ease-out) both;
-  }
-
   @keyframes rise {
-    from { opacity: 0; transform: translateY(0.3rem); }
+    from { opacity: 0; transform: translateY(0.6rem); }
     to { opacity: 1; transform: translateY(0); }
   }
 
-  @keyframes pop {
-    from { opacity: 0; transform: translateY(0.2rem); }
-    to { opacity: 1; transform: translateY(0); }
+  /* A route change re-grows the active nav indicator instead of snapping. */
+  @keyframes nav-underline {
+    from { opacity: 0; transform: scaleX(0.3); }
+    to { opacity: 1; transform: scaleX(1); }
   }
 
   /* ---- surfaces ------------------------------------------------------- */
@@ -563,18 +637,191 @@
     to { opacity: 1; transform: rotate(0) scale(1); }
   }
 
+  /* Reveals: one longer, softer motion. No `will-change` — promoting every
+     revealed section to its own layer cost more than it bought. */
   html.js [data-reveal] {
     opacity: 0;
-    transform: translateY(0.2rem);
-    will-change: opacity, transform;
-    transition: opacity 0.22s var(--ease-out), transform 0.22s var(--ease-out);
+    transform: translateY(0.6rem);
+    transition: opacity var(--dur-4) var(--ease-out), transform var(--dur-4) var(--ease-out);
     transition-delay: var(--reveal-delay, 0ms);
   }
 
   html.js [data-reveal][data-visible] {
     opacity: 1;
     transform: none;
-    will-change: auto;
+  }
+
+  /* ---- interaction vocabulary -----------------------------------------
+     Three shared hover signals, and nothing else: a wash that fades in, a
+     one-to-four pixel nudge, or an accent bar that grows. No text changes
+     colour on hover anywhere in the site, so contrast never dips. */
+
+  .row-hover {
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out);
+  }
+
+  .row-hover:hover,
+  .row-hover:focus-visible {
+    background-color: var(--color-wash);
+  }
+
+  .option-row {
+    transition:
+      background-color var(--dur-2) var(--ease-out),
+      border-color var(--dur-2) var(--ease-out),
+      color var(--dur-2) var(--ease-out),
+      transform var(--dur-2) var(--ease-out);
+  }
+
+  .option-row:hover:not(:disabled),
+  .option-row:focus-visible {
+    transform: translateX(0.125rem);
+  }
+
+  .option-row:active:not(:disabled) {
+    transform: translateX(0);
+  }
+
+  /* Desktop nav: an underline that grows from the middle of the link. */
+  .nav-item {
+    position: relative;
+  }
+
+  .nav-item::after {
+    content: "";
+    position: absolute;
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0;
+    height: 3px;
+    background: var(--color-brand);
+    opacity: 0;
+    transform: scaleX(0.35);
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      transform var(--dur-3) var(--ease-out);
+  }
+
+  .nav-item:hover::after,
+  .nav-item:focus-visible::after {
+    opacity: 0.6;
+    transform: scaleX(1);
+  }
+
+  /* The current page already carries a solid indicator. */
+  .nav-item[aria-current="page"]::after {
+    display: none;
+  }
+
+  .nav-active {
+    animation: nav-underline var(--dur-3) var(--ease-out) both;
+    transform-origin: center;
+  }
+
+  /* Text links: an underline that wipes in from the left. */
+  .link-quiet {
+    position: relative;
+    transition: color var(--dur-2) var(--ease-out);
+  }
+
+  .link-quiet::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.15rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      transform var(--dur-3) var(--ease-out);
+  }
+
+  .link-quiet:hover::after,
+  .link-quiet:focus-visible::after {
+    opacity: 0.65;
+    transform: scaleX(1);
+  }
+
+  /* ---- module index rows ----------------------------------------------
+     The hover signal is a wash plus a 2px accent bar that grows, while the
+     row's own contents nudge four pixels. The row itself never moves, so the
+     pointer can't fall off the edge of what it is hovering, and every text
+     colour stays exactly as it was — which is what keeps it readable. */
+
+  .module-link {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .module-wash,
+  .module-accent {
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .module-wash {
+    inset: 0;
+    z-index: 0;
+    background: var(--color-wash);
+    opacity: 0;
+    transition: opacity var(--dur-3) var(--ease-out);
+  }
+
+  .module-accent {
+    left: 0;
+    top: 0.4rem;
+    bottom: 0.4rem;
+    z-index: 1;
+    width: 2px;
+    background: var(--color-brand);
+    opacity: 0;
+    transform: scaleY(0.2);
+    transition:
+      opacity var(--dur-2) var(--ease-out),
+      transform var(--dur-3) var(--ease-out);
+  }
+
+  .module-inner {
+    transition: transform var(--dur-3) var(--ease-out);
+  }
+
+  .module-link:hover .module-wash,
+  .module-link:focus-visible .module-wash {
+    opacity: 1;
+  }
+
+  .module-link:hover .module-accent,
+  .module-link:focus-visible .module-accent {
+    opacity: 1;
+    transform: scaleY(1);
+  }
+
+  .module-link:hover .module-inner,
+  .module-link:focus-visible .module-inner {
+    transform: translateX(0.25rem);
+  }
+
+  /* ---- reading progress ------------------------------------------------ */
+
+  .reading-progress {
+    position: fixed;
+    inset: 0 0 auto;
+    z-index: 60;
+    height: 2px;
+    pointer-events: none;
+  }
+
+  .reading-progress-fill {
+    height: 100%;
+    background: var(--color-brand);
+    transform: scaleX(var(--read, 0));
+    transform-origin: left center;
   }
 
   /* ---- tag ------------------------------------------------------------ */
@@ -626,7 +873,7 @@
     font-size: 0.8125rem;
     font-weight: 500;
     font-variant-numeric: tabular-nums;
-    color: var(--color-brand);
+    color: var(--color-brand-ink);
     letter-spacing: 0.04em;
     flex-shrink: 0;
   }
@@ -694,11 +941,16 @@
     overflow: hidden;
   }
 
+  /* Scaled, not resized: a progress bar should never trigger layout. Animate
+     `--rail-scale` from inline styles. */
   .rail-fill {
+    width: 100%;
     height: 100%;
     border-radius: 999px;
     background: var(--color-brand);
-    transition: width 0.6s var(--ease-out);
+    transform: scaleX(var(--rail-scale, 0));
+    transform-origin: left center;
+    transition: transform var(--dur-4) var(--ease-out);
   }
 
   .rail-fill[data-tone="ok"] {
@@ -815,16 +1067,19 @@
     color: var(--color-ink);
   }
 
-  .prose a {
+  /* `:not(.btn)` matters: button-styled links are anchors too, and the module
+     navigation sits inside this prose container — without the exclusion every
+     module button label picks up a prose underline. */
+  .prose a:not(.btn) {
     color: var(--color-brand-soft);
     text-decoration: underline;
     text-decoration-thickness: 1px;
     text-underline-offset: 3px;
-    transition: color 0.17s var(--ease-out);
+    transition: color var(--dur-2) var(--ease-out);
   }
 
-  .prose a:hover {
-    color: var(--color-brand);
+  .prose a:not(.btn):hover {
+    color: var(--color-ink);
   }
 
   .prose code {
