@@ -3,7 +3,7 @@ import { buildMessages, looksLikeForeignLeak, sanitizeCompletion } from "@/lib/g
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MAX_PROMPT_LENGTH = 4000;
-const MAX_TOKENS = 500;
+const MAX_TOKENS = 2000;
 
 // Reasoning models accept a reasoning_format of parsed|raw|hidden. `parsed`
 // keeps the thinking channel in `message.reasoning` and leaves `message.content`
