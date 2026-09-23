@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { buildMessages, looksLikeForeignLeak, sanitizeCompletion } from "@/lib/groq-safety";
+import { checkDailyBudget, checkRateLimit, clientKey, LIMITS, recordGroqCall, retryHint } from "@/lib/rate-limit";
 
 const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
 const MAX_PROMPT_LENGTH = 4000;
@@ -32,6 +33,10 @@ async function callGroq(
   prompt: string,
   strict: boolean
 ): Promise<Attempt> {
+  // Counted per outbound request rather than per page action: the retry path in
+  // POST spends quota too, so it has to show up in the day's total.
+  recordGroqCall();
+
   const response = await fetch(GROQ_URL, {
     method: "POST",
     headers: {
@@ -58,6 +63,47 @@ async function callGroq(
   };
 }
 
+/**
+ * Three ceilings in front of the shared key: the day's budget first (once that's
+ * gone, nothing else matters), then this visitor's own rate, then the site's.
+ * The visitor check runs before the site check so one flood can't consume
+ * everyone else's share of the site-wide window.
+ */
+function requestGuard(request: Request): NextResponse | null {
+  const budget = checkDailyBudget();
+  if (!budget.allowed) {
+    return NextResponse.json(
+      {
+        error:
+          "The playground has reached its daily prompt limit and pauses until tomorrow. Every lesson, quiz, and checklist on the site still works.",
+      },
+      { status: 503 }
+    );
+  }
+
+  const visitor = checkRateLimit(clientKey(request, "prompt"), LIMITS.perVisitorPerMinute);
+  if (!visitor.allowed) {
+    return NextResponse.json(
+      {
+        error: `That's this playground's speed limit for one device — try again in ${retryHint(visitor.retryAfterSeconds)}.`,
+      },
+      { status: 429, headers: { "Retry-After": String(visitor.retryAfterSeconds) } }
+    );
+  }
+
+  const site = checkRateLimit("prompt:site", LIMITS.sitePerMinute);
+  if (!site.allowed) {
+    return NextResponse.json(
+      {
+        error: `The playground is handling a lot of prompts at once right now — try again in ${retryHint(site.retryAfterSeconds)}.`,
+      },
+      { status: 429, headers: { "Retry-After": String(site.retryAfterSeconds) } }
+    );
+  }
+
+  return null;
+}
+
 // One shared key, set by the mentor in the server environment (GROQ_API_KEY),
 // is used for every request — students never see or handle a key at all.
 // Because it's read from process.env and only ever used server-side, it's never
@@ -70,6 +116,9 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+
+  const limited = requestGuard(request);
+  if (limited) return limited;
 
   let body: { model?: string; prompt?: string };
   try {

@@ -4,8 +4,12 @@ import { useEffect, useState } from "react";
 import { useProgress } from "@/lib/progress-context";
 import { AlertIcon, CheckIcon, PlayIcon, SpinnerIcon } from "@/components/ui/Icons";
 
-const FALLBACK_MODELS = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile", "openai/gpt-oss-20b", "openai/gpt-oss-120b"];
-const DEFAULT_MODEL = "llama-3.1-8b-instant"; // highest free-tier rate limit — best fit for a shared classroom key
+// Only used until /api/groq/models answers — the live list always wins, because
+// an account's model access changes over time. The previous default
+// (llama-3.1-8b-instant) was retired, which made every run fail with "model does
+// not exist", so this list is kept to what the API actually returns now.
+const FALLBACK_MODELS = ["openai/gpt-oss-20b", "openai/gpt-oss-120b", "qwen/qwen3.8-27b"];
+const DEFAULT_MODEL = "openai/gpt-oss-20b"; // smallest current chat model — fastest, highest free-tier limits
 const MAX_PROMPT_LENGTH = 4000;
 
 const DEFAULT_PROMPT_A = "Write about dogs.";
@@ -108,7 +112,11 @@ export function GroqPlayground() {
   const done = hydrated && isActivityComplete("tools-groqlab");
   const running = resultA.status === "loading" || resultB.status === "loading";
   const tooLong = promptA.length > MAX_PROMPT_LENGTH || promptB.length > MAX_PROMPT_LENGTH;
-  const canRun = Boolean(promptA.trim() || promptB.trim()) && !running && modelsError === null && !tooLong;
+  // A failed model-list fetch doesn't block running: the fallback list above is
+  // known-good, and a run reports its own error far more usefully than a
+  // disabled button does. (Blocking here also meant our own rate limit could
+  // take the whole playground offline for a visitor who just reloaded a lot.)
+  const canRun = Boolean(promptA.trim() || promptB.trim()) && !running && !tooLong;
 
   useEffect(() => {
     let cancelled = false;

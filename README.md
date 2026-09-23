@@ -145,17 +145,34 @@ account or key.
 3. Restart `npm run dev`. The Playground picks it up automatically — no `NEXT_PUBLIC_` prefix, so
    this key stays server-side and is never sent to the browser or visible in the page source.
 
-**Rate limits are shared across every student using the site at once.** Groq's free tier is per
-account, not per person — as of mid-2026 that's roughly 30 requests/minute on the fast models
-(`llama-3.1-8b-instant`, the default here), less on larger ones like `openai/gpt-oss-120b`. For a
-single classroom period that's normally plenty, but if a whole class hammers it simultaneously
-you'll see 429 errors (the app shows a friendly "the class is going too fast" message rather than a
-raw error). Two ways to get more headroom if you need it:
+**The site guards that shared key itself.** Groq's free tier is per account, not per person, so the
+proxy enforces three ceilings before anything reaches Groq (see `src/lib/rate-limit.ts`): per visitor
+per minute, whole site per minute, and total Groq calls per day. A comparison run costs two calls,
+and the model list is cached for ten minutes so page loads spend nothing at all. Hitting a ceiling
+returns a plain-language 429 ("try again in about 20 seconds") rather than a raw error.
+
+Each ceiling is tunable, which is what you reach for during a bigger class or on a paid tier:
+
+| Variable | Default | What it stops |
+|---|---|---|
+| `GROQ_LIMIT_PER_VISITOR_PER_MINUTE` | `12` | one device (or a stray script) draining the key |
+| `GROQ_LIMIT_SITE_PER_MINUTE` | `30` | a whole class arriving at once; sits just under Groq's own limit |
+| `GROQ_LIMIT_CALLS_PER_DAY` | `1000` | anything running the key dry overnight |
+| `GROQ_LIMIT_MODEL_LOOKUPS_PER_MINUTE` | `20` | reload loops on the model list (cache misses only) |
+
+Counters live in server memory: exact on a single long-lived server (`npm start`), and per-instance —
+so fuzzier — on serverless hosts, where a cold start also resets them.
+
+One thing to know if your class shares a network: everyone behind the same NAT address counts as one
+visitor, so `GROQ_LIMIT_PER_VISITOR_PER_MINUTE` is a flood stop rather than a per-student budget.
+Raise it if a lesson behind one school address trips it.
+
+Two ways to get more headroom if you need it:
 
 - Add a credit card to your Groq account (no charge unless you exceed free limits) to unlock the
-  Developer tier, roughly 10x the rate limits.
-- Keep the default model (`llama-3.1-8b-instant`) selected — it has the highest free-tier limits of
-  the bunch — and discourage switching to the bigger models during a live group session.
+  Developer tier, roughly 10x the rate limits, then raise the ceilings above to match.
+- Leave the default model (`openai/gpt-oss-20b`, the smallest on the account) selected — the larger
+  models have lower free-tier limits.
 
 ## Deployment (needs a working URL to submit)
 
